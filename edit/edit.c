@@ -266,11 +266,9 @@ edit_insert_file (WEdit *edit, const char *filename)
     char *p;
     if ((p = edit_get_filter (filename))) {
 	FILE *f;
-	long current = edit->curs1;
 	f = (FILE *) popen (p, "r");
 	if (f) {
 	    edit_insert_stream (edit, f);
-	    edit_cursor_move (edit, current - edit->curs1);
 	    if (pclose (f) > 0) {
 	        GString *errmsg = g_string_new (NULL);
 		g_string_sprintf (errmsg, _(" Error reading from pipe: %s "), p);
@@ -290,7 +288,6 @@ edit_insert_file (WEdit *edit, const char *filename)
 	g_free (p);
     } else {
 	int i, file, blocklen;
-	long current = edit->curs1;
 	unsigned char *buf;
 	if ((file = mc_open (filename, O_RDONLY | O_BINARY)) == -1)
 	    return 0;
@@ -299,7 +296,6 @@ edit_insert_file (WEdit *edit, const char *filename)
 	    for (i = 0; i < blocklen; i++)
 		edit_insert (edit, buf[i]);
 	}
-	edit_cursor_move (edit, current - edit->curs1);
 	g_free (buf);
 	mc_close (file);
 	if (blocklen)
