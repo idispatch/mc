@@ -301,6 +301,7 @@ edit_insert_file (WEdit *edit, const char *filename)
 	if (blocklen)
 	    return 0;
     }
+    edit->force |= REDRAW_PAGE;
     return 1;
 }
 
