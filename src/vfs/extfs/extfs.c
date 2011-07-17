@@ -374,8 +374,11 @@ extfs_free_archive (struct archive *archive)
     if (archive->local_name != NULL)
     {
         struct stat my;
+        vfs_path_t *tmp_vpath;
 
-        mc_stat (archive->local_name, &my);
+        tmp_vpath = vfs_path_from_str (archive->local_name);
+        mc_stat (tmp_vpath, &my);
+        vfs_path_free (tmp_vpath);
         mc_ungetlocalcopy (archive->name, archive->local_name,
                            archive->local_stat.st_mtime != my.st_mtime);
         g_free (archive->local_name);
@@ -409,14 +412,20 @@ extfs_open_archive (int fstype, const char *name, struct archive **pparc)
 
     if (info->need_archive)
     {
-        if (mc_stat (name, &mystat) == -1)
+        if (mc_stat (vpath, &mystat) == -1)
+        {
+            vfs_path_free (vpath);
             return NULL;
+        }
 
         if (!vfs_file_is_local (vpath))
         {
             local_name = mc_getlocalcopy (name);
             if (local_name == NULL)
+            {
+                vfs_path_free (vpath);
                 return NULL;
+            }
         }
         tmp = name_quote ((vpath != NULL) ? path_element->path : name, 0);
     }
@@ -450,7 +459,11 @@ extfs_open_archive (int fstype, const char *name, struct archive **pparc)
     current_archive->local_name = local_name;
 
     if (local_name != NULL)
-        mc_stat (local_name, &current_archive->local_stat);
+    {
+        vfs_path_t *tmp_vpath = vfs_path_from_str (local_name);
+        mc_stat (tmp_vpath, &current_archive->local_stat);
+        vfs_path_free (tmp_vpath);
+    }
     current_archive->inode_counter = 0;
     current_archive->fd_usage = 0;
     current_archive->rdev = archive_counter++;

@@ -1048,6 +1048,7 @@ file_mask_dialog (FileOpContext * ctx, FileOperation operation,
 
     {
         struct stat buf;
+        vfs_path_t *vpath;
 
         QuickDialog Quick_input = {
             fmd_xlen, FMDY, -1, -1, op_names[operation],
@@ -1112,6 +1113,7 @@ file_mask_dialog (FileOpContext * ctx, FileOperation operation,
         tmp = dest_dir;
         dest_dir = tilde_expand (tmp);
         g_free (tmp);
+        vpath = vfs_path_from_str (dest_dir);
 
         ctx->dest_mask = strrchr (dest_dir, PATH_SEP);
         if (ctx->dest_mask == NULL)
@@ -1122,10 +1124,10 @@ file_mask_dialog (FileOpContext * ctx, FileOperation operation,
         if (!*ctx->dest_mask
             || (!ctx->dive_into_subdirs && !is_wildcarded (ctx->dest_mask)
                 && (!only_one
-                    || (!mc_stat (dest_dir, &buf) && S_ISDIR (buf.st_mode))))
+                    || (!mc_stat (vpath, &buf) && S_ISDIR (buf.st_mode))))
             || (ctx->dive_into_subdirs
                 && ((!only_one && !is_wildcarded (ctx->dest_mask))
-                    || (only_one && !mc_stat (dest_dir, &buf) && S_ISDIR (buf.st_mode)))))
+                    || (only_one && !mc_stat (vpath, &buf) && S_ISDIR (buf.st_mode)))))
             ctx->dest_mask = g_strdup ("\\0");
         else
         {
@@ -1137,6 +1139,7 @@ file_mask_dialog (FileOpContext * ctx, FileOperation operation,
             g_free (dest_dir);
             dest_dir = g_strdup ("./");
         }
+        vfs_path_free (vpath);
         if (val == B_USER)
             *do_bg = TRUE;
     }

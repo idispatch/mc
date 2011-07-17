@@ -389,10 +389,17 @@ apply_mask (struct stat *sf)
     do
     {
         char *fname;
+        vfs_path_t *vpath;
 
         fname = next_file ();
-        if (mc_stat (fname, sf) != 0)
+        vpath = vfs_path_from_str (fname);
+        if (mc_stat (vpath, sf) != 0)
+        {
+            vfs_path_free (vpath);
             return;
+        }
+        vfs_path_free (vpath);
+
 
         c_stat = sf->st_mode;
 
@@ -412,6 +419,7 @@ chmod_cmd (void)
 
     do
     {                           /* do while any files remaining */
+        vfs_path_t *vpath;
         Dlg_head *ch_dlg;
         struct stat sf_stat;
         char *fname;
@@ -430,8 +438,14 @@ chmod_cmd (void)
         else
             fname = selection (current_panel)->fname;   /* single file */
 
-        if (mc_stat (fname, &sf_stat) != 0)
+        vpath = vfs_path_from_str (fname);
+
+        if (mc_stat (vpath, &sf_stat) != 0)
+        {
+            vfs_path_free (vpath);
             break;
+        }
+        vfs_path_free (vpath);
 
         c_stat = sf_stat.st_mode;
 

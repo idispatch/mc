@@ -540,26 +540,26 @@ _vfs_get_cwd (void)
 
     if (path_element->class->flags & VFSF_LOCAL)
     {
-        char *tmp;
+        vfs_path_t *tmp_vpath = vfs_path_from_str (g_get_current_dir ());
 
-        tmp = g_get_current_dir ();
-        if (tmp != NULL)
+        if (tmp_vpath != NULL)
         {                       /* One of the directories in the path is not readable */
             struct stat my_stat, my_stat2;
 
             /* Check if it is O.K. to use the current_dir */
             if (!(mc_global.vfs.cd_symlinks
-                  && mc_stat (tmp, &my_stat) == 0
-                  && mc_stat (path_element->path, &my_stat2) == 0
+                  && mc_stat (tmp_vpath, &my_stat) == 0
+                  && mc_stat (vfs_get_raw_current_dir (), &my_stat2) == 0
                   && my_stat.st_ino == my_stat2.st_ino && my_stat.st_dev == my_stat2.st_dev))
             {
-                vfs_set_raw_current_dir (vfs_path_from_str (tmp));
+                vfs_set_raw_current_dir (tmp_vpath);
             }
-
-            g_free (tmp);
+            else
+            {
+                vfs_path_free (tmp_vpath);
+            }
         }
     }
-
     return vfs_path_to_str (vfs_get_raw_current_dir ());
 }
 
