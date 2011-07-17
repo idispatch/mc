@@ -2670,11 +2670,16 @@ panel_operate (void *source_panel, FileOperation operation, gboolean force_singl
         /* We now have ETA in all cases */
 
         /* One file: FIXME mc_chdir will take user out of any vfs */
-        if ((operation != OP_COPY) && (get_current_type () == view_tree) &&
-            (mc_chdir (PATH_SEP_STR) < 0))
+        if ((operation != OP_COPY) && (get_current_type () == view_tree))
         {
-            ret_val = FALSE;
-            goto clean_up;
+            vfs_path_t *vpath = vfs_path_from_str (PATH_SEP_STR);
+            int chdir_retcode = mc_chdir (vpath);
+            vfs_path_free (vpath);
+            if (chdir_retcode < 0)
+            {
+                ret_val = FALSE;
+                goto clean_up;
+            }
         }
 
         /* The source and src_stat variables have been initialized before */

@@ -199,7 +199,9 @@ do_execute (const char *lc_shell, const char *command, int flags)
 
     if (old_vfs_dir)
     {
-        mc_chdir (old_vfs_dir);
+        vfs_path_t *vpath = vfs_path_from_str (old_vfs_dir);
+        mc_chdir (vpath);
+        vfs_path_free (vpath);
         g_free (old_vfs_dir);
     }
 
