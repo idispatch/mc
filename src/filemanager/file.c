@@ -373,7 +373,7 @@ make_symlink (FileOpContext * ctx, const char *src_path, const char *dst_path)
     dst_is_symlink = (mc_lstat (dst_vpath, &sb) == 0) && S_ISLNK (sb.st_mode);
 
   retry_src_readlink:
-    len = mc_readlink (src_path, link_target, MC_MAXPATHLEN - 1);
+    len = mc_readlink (src_vpath, link_target, MC_MAXPATHLEN - 1);
     if (len < 0)
     {
         if (ctx->skip_all)
@@ -449,7 +449,7 @@ make_symlink (FileOpContext * ctx, const char *src_path, const char *dst_path)
      */
     if (dst_is_symlink)
     {
-        if (!mc_unlink (dst_path))
+        if (!mc_unlink (dst_vpath))
             if (mc_symlink (link_target, dst_path) == 0)
             {
                 /* Success */
@@ -927,7 +927,7 @@ move_file_file (FileOpTotalContext * tctx, FileOpContext * ctx, const char *s, c
     mc_refresh ();
 
   retry_src_remove:
-    if (mc_unlink (s) != 0 && !ctx->skip_all)
+    if (mc_unlink (src_vpath) != 0 && !ctx->skip_all)
     {
         return_status = file_error (_("Cannot remove file \"%s\"\n%s"), s);
         if (return_status == FILE_RETRY)
@@ -974,7 +974,7 @@ erase_file (FileOpTotalContext * tctx, FileOpContext * ctx, const char *s,
         buf.st_size = 0;
     }
 
-    while (mc_unlink (s) != 0 && !ctx->skip_all)
+    while (mc_unlink (vpath) != 0 && !ctx->skip_all)
     {
         return_status = file_error (_("Cannot delete file \"%s\"\n%s"), s);
         if (return_status == FILE_ABORT)
@@ -1463,7 +1463,6 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
         dst_exists = TRUE;
         break;
     }
-    vfs_path_free (dst_vpath);
 
     src_vpath = vfs_path_from_str (src_path);
     while ((*ctx->stat_func) (src_vpath, &sb) != 0)
@@ -1479,23 +1478,31 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
         if (return_status != FILE_RETRY)
         {
             vfs_path_free (src_vpath);
+            vfs_path_free (dst_vpath);
             return return_status;
         }
     }
-    vfs_path_free (src_vpath);
 
     if (dst_exists)
     {
         /* Destination already exists */
         if (sb.st_dev == sb2.st_dev && sb.st_ino == sb2.st_ino)
+        {
+            vfs_path_free (src_vpath);
+            vfs_path_free (dst_vpath);
             return warn_same_file (_("\"%s\"\nand\n\"%s\"\nare the same file"), src_path, dst_path);
+        }
         /* Should we replace destination? */
         if (tctx->ask_overwrite)
         {
             ctx->do_reget = 0;
             return_status = query_replace (ctx, dst_path, &sb, &sb2);
             if (return_status != FILE_CONT)
+            {
+                vfs_path_free (src_vpath);
+                vfs_path_free (dst_vpath);
                 return return_status;
+            }
         }
     }
 
@@ -1505,16 +1512,23 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
         if (!ctx->follow_links && sb.st_nlink > 1 && check_hardlinks (src_path, dst_path, &sb))
         {
             /* We have made a hardlink - no more processing is necessary */
+            vfs_path_free (src_vpath);
+            vfs_path_free (dst_vpath);
             return FILE_CONT;
         }
 
         if (S_ISLNK (sb.st_mode))
+        {
+            vfs_path_free (src_vpath);
+            vfs_path_free (dst_vpath);
+
             return make_symlink (ctx, src_path, dst_path);
+        }
 
         if (S_ISCHR (sb.st_mode) || S_ISBLK (sb.st_mode) ||
             S_ISFIFO (sb.st_mode) || S_ISNAM (sb.st_mode) || S_ISSOCK (sb.st_mode))
         {
-            while (mc_mknod (dst_path, sb.st_mode & ctx->umask_kill, sb.st_rdev) < 0
+            while (mc_mknod (dst_vpath, sb.st_mode & ctx->umask_kill, sb.st_rdev) < 0
                    && !ctx->skip_all)
             {
                 return_status = file_error (_("Cannot create special file \"%s\"\n%s"), dst_path);
@@ -1522,11 +1536,13 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
                     continue;
                 if (return_status == FILE_SKIPALL)
                     ctx->skip_all = TRUE;
+                vfs_path_free (src_vpath);
+                vfs_path_free (dst_vpath);
                 return return_status;
             }
             /* Success */
 
-            while (ctx->preserve_uidgid && mc_chown (dst_path, sb.st_uid, sb.st_gid) != 0
+            while (ctx->preserve_uidgid && mc_chown (dst_vpath, sb.st_uid, sb.st_gid) != 0
                    && !ctx->skip_all)
             {
                 temp_status = file_error (_("Cannot chown target file \"%s\"\n%s"), dst_path);
@@ -1535,10 +1551,14 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
                 if (temp_status == FILE_SKIPALL)
                     ctx->skip_all = TRUE;
                 if (temp_status != FILE_RETRY)
+                {
+                    vfs_path_free (src_vpath);
+                    vfs_path_free (dst_vpath);
                     return temp_status;
+                }
             }
 
-            while (ctx->preserve && mc_chmod (dst_path, sb.st_mode & ctx->umask_kill) != 0
+            while (ctx->preserve && mc_chmod (dst_vpath, sb.st_mode & ctx->umask_kill) != 0
                    && !ctx->skip_all)
             {
                 temp_status = file_error (_("Cannot chmod target file \"%s\"\n%s"), dst_path);
@@ -1547,7 +1567,11 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
                 if (temp_status == FILE_SKIPALL)
                     ctx->skip_all = TRUE;
                 if (temp_status != FILE_RETRY)
+                {
+                    vfs_path_free (src_vpath);
+                    vfs_path_free (dst_vpath);
                     return temp_status;
+                }
             }
 
             return FILE_CONT;
@@ -1566,6 +1590,8 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
         if (return_status == FILE_SKIP)
             break;
         ctx->do_append = 0;
+        vfs_path_free (src_vpath);
+        vfs_path_free (dst_vpath);
         return return_status;
     }
 
@@ -1672,7 +1698,7 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
         }
         mc_close (dest_desc);
         dest_desc = -1;
-        mc_unlink (dst_path);
+        mc_unlink (dst_vpath);
         dst_status = DEST_NONE;
         goto ret;
     }
@@ -1830,14 +1856,14 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
                                _("Incomplete file was retrieved. Keep it?"),
                                D_ERROR, 2, _("&Delete"), _("&Keep"));
         if (result == 0)
-            mc_unlink (dst_path);
+            mc_unlink (dst_vpath);
     }
     else if (dst_status == DEST_FULL)
     {
         /* Copy has succeeded */
         if (!appending && ctx->preserve_uidgid)
         {
-            while (mc_chown (dst_path, src_uid, src_gid) != 0 && !ctx->skip_all)
+            while (mc_chown (dst_vpath, src_uid, src_gid) != 0 && !ctx->skip_all)
             {
                 temp_status = file_error (_("Cannot chown target file \"%s\"\n%s"), dst_path);
                 if (temp_status == FILE_RETRY)
@@ -1857,7 +1883,7 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
         {
             if (ctx->preserve)
             {
-                while (mc_chmod (dst_path, (src_mode & ctx->umask_kill)) != 0 && !ctx->skip_all)
+                while (mc_chmod (dst_vpath, (src_mode & ctx->umask_kill)) != 0 && !ctx->skip_all)
                 {
                     temp_status = file_error (_("Cannot chmod target file \"%s\"\n%s"), dst_path);
                     if (temp_status == FILE_RETRY)
@@ -1877,15 +1903,17 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
                 src_mode = umask (-1);
                 umask (src_mode);
                 src_mode = 0100666 & ~src_mode;
-                mc_chmod (dst_path, (src_mode & ctx->umask_kill));
+                mc_chmod (dst_vpath, (src_mode & ctx->umask_kill));
             }
-            mc_utime (dst_path, &utb);
+            mc_utime (dst_vpath, &utb);
         }
     }
 
     if (return_status == FILE_CONT)
         return_status = progress_update_one (tctx, ctx, file_size, tctx->is_toplevel_file);
 
+    vfs_path_free (src_vpath);
+    vfs_path_free (dst_vpath);
     return return_status;
 }
 
@@ -1909,7 +1937,7 @@ copy_dir_dir (FileOpTotalContext * tctx, FileOpContext * ctx, const char *s, con
     struct utimbuf utb;
     struct link *lp;
     char *d;
-    vfs_path_t *src_vpath, *dst_vpath;
+    vfs_path_t *src_vpath, *dst_vpath, *dest_dir_vpath = NULL;
 
     d = g_strdup (_d);
 
@@ -2035,6 +2063,7 @@ copy_dir_dir (FileOpTotalContext * tctx, FileOpContext * ctx, const char *s, con
             goto dont_mkdir;
         }
     }
+    dest_dir_vpath = vfs_path_from_str (dest_dir);
     while (my_mkdir (dest_dir, (cbuf.st_mode & ctx->umask_kill) | S_IRWXU))
     {
         if (ctx->skip_all)
@@ -2051,11 +2080,8 @@ copy_dir_dir (FileOpTotalContext * tctx, FileOpContext * ctx, const char *s, con
 
     lp = g_new (struct link, 1);
     {
-        vfs_path_t *tmp_vpath = vfs_path_from_str (dest_dir);
-        mc_stat (tmp_vpath, &buf);
-
-        lp->vfs = vfs_path_get_by_index (tmp_vpath, -1)->class;
-        vfs_path_free (tmp_vpath);
+        mc_stat (dest_dir_vpath, &buf);
+        lp->vfs = vfs_path_get_by_index (dest_dir_vpath, -1)->class;
     }
     lp->ino = buf.st_ino;
     lp->dev = buf.st_dev;
@@ -2064,7 +2090,7 @@ copy_dir_dir (FileOpTotalContext * tctx, FileOpContext * ctx, const char *s, con
 
     if (ctx->preserve_uidgid)
     {
-        while (mc_chown (dest_dir, cbuf.st_uid, cbuf.st_gid) != 0)
+        while (mc_chown (dest_dir_vpath, cbuf.st_uid, cbuf.st_gid) != 0)
         {
             if (ctx->skip_all)
                 return_status = FILE_SKIPALL;
@@ -2161,21 +2187,22 @@ copy_dir_dir (FileOpTotalContext * tctx, FileOpContext * ctx, const char *s, con
 
     if (ctx->preserve)
     {
-        mc_chmod (dest_dir, cbuf.st_mode & ctx->umask_kill);
+        mc_chmod (dest_dir_vpath, cbuf.st_mode & ctx->umask_kill);
         utb.actime = cbuf.st_atime;
         utb.modtime = cbuf.st_mtime;
-        mc_utime (dest_dir, &utb);
+        mc_utime (dest_dir_vpath, &utb);
     }
     else
     {
         cbuf.st_mode = umask (-1);
         umask (cbuf.st_mode);
         cbuf.st_mode = 0100777 & ~cbuf.st_mode;
-        mc_chmod (dest_dir, cbuf.st_mode & ctx->umask_kill);
+        mc_chmod (dest_dir_vpath, cbuf.st_mode & ctx->umask_kill);
     }
 
   ret:
     g_free (dest_dir);
+    vfs_path_free (dest_dir_vpath);
     g_free (parent_dirs);
   ret_fast:
     g_free (d);
