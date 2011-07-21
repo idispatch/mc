@@ -82,7 +82,7 @@ mc_def_getlocalcopy (const char *filename)
     struct stat mystat;
     vfs_path_t *vpath = vfs_path_from_str (filename);
 
-    fdin = mc_open (filename, O_RDONLY | O_LINEAR);
+    fdin = mc_open (vpath, O_RDONLY | O_LINEAR);
     if (fdin == -1)
         return NULL;
 
@@ -129,6 +129,7 @@ static int
 mc_def_ungetlocalcopy (struct vfs_class *vfs, const char *filename,
                        const char *local, int has_changed)
 {
+    vfs_path_t *vpath = vfs_path_from_str (filename);
     int fdin = -1, fdout = -1;
     if (has_changed)
     {
@@ -141,7 +142,7 @@ mc_def_ungetlocalcopy (struct vfs_class *vfs, const char *filename,
         fdin = open (local, O_RDONLY);
         if (fdin == -1)
             goto failed;
-        fdout = mc_open (filename, O_WRONLY | O_TRUNC);
+        fdout = mc_open (vpath, O_WRONLY | O_TRUNC);
         if (fdout == -1)
             goto failed;
         while ((i = read (fdin, buffer, sizeof (buffer))) > 0)
@@ -163,6 +164,7 @@ mc_def_ungetlocalcopy (struct vfs_class *vfs, const char *filename,
         }
     }
     unlink (local);
+    vfs_path_free (vpath);
     return 0;
 
   failed:
@@ -172,6 +174,7 @@ mc_def_ungetlocalcopy (struct vfs_class *vfs, const char *filename,
     if (fdin != -1)
         close (fdin);
     unlink (local);
+    vfs_path_free (vpath);
     return -1;
 }
 
@@ -180,13 +183,11 @@ mc_def_ungetlocalcopy (struct vfs_class *vfs, const char *filename,
 /* --------------------------------------------------------------------------------------------- */
 
 int
-mc_open (const char *filename, int flags, ...)
+mc_open (const vfs_path_t * vpath, int flags, ...)
 {
     int mode = 0, result = -1;
-    vfs_path_t *vpath;
     vfs_path_element_t *path_element;
 
-    vpath = vfs_path_from_str (filename);
     if (vpath == NULL)
         return -1;
 
@@ -213,7 +214,6 @@ mc_open (const char *filename, int flags, ...)
     else
         errno = -EOPNOTSUPP;
 
-    vfs_path_free (vpath);
     return result;
 }
 
@@ -256,7 +256,7 @@ MC_NAMEOP (mknod, (const vfs_path_t *vpath, mode_t mode, dev_t dev), (vpath, mod
 /* --------------------------------------------------------------------------------------------- */
 
 int
-mc_symlink (const vfs_path_t *vpath1, const vfs_path_t *vpath2)
+mc_symlink (const vfs_path_t * vpath1, const vfs_path_t * vpath2)
 {
     int result = -1;
 

@@ -146,7 +146,7 @@ edit_save_file (WEdit * edit, const char *filename)
     if (this_save_mode != EDIT_QUICK_SAVE)
     {
         if (!vfs_file_is_local (real_filename_vpath)
-            || (fd = mc_open (real_filename, O_RDONLY | O_BINARY)) == -1)
+            || (fd = mc_open (real_filename_vpath, O_RDONLY | O_BINARY)) == -1)
         {
             /*
              * The file does not exists yet, so no safe save or
@@ -240,7 +240,7 @@ edit_save_file (WEdit * edit, const char *filename)
     (void) mc_chown (savename_vpath, edit->stat1.st_uid, edit->stat1.st_gid);
     (void) mc_chmod (savename_vpath, edit->stat1.st_mode);
 
-    fd = mc_open (savename, O_CREAT | O_WRONLY | O_TRUNC | O_BINARY, edit->stat1.st_mode);
+    fd = mc_open (savename_vpath, O_CREAT | O_WRONLY | O_TRUNC | O_BINARY, edit->stat1.st_mode);
     if (fd == -1)
         goto error_save;
 
@@ -1499,8 +1499,10 @@ edit_save_as_cmd (WEdit * edit)
             if (strcmp (edit->filename, exp))
             {
                 int file;
+                vfs_path_t *tmp_vpath = vfs_path_from_str (exp);
                 different_filename = 1;
-                file = mc_open (exp, O_RDONLY | O_BINARY);
+                file = mc_open (tmp_vpath, O_RDONLY | O_BINARY);
+                vfs_path_free (tmp_vpath);
                 if (file != -1)
                 {
                     /* the file exists */
@@ -2594,9 +2596,11 @@ int
 edit_save_block (WEdit * edit, const char *filename, long start, long finish)
 {
     int len, file;
+    vfs_path_t *vpath = vfs_path_from_str (filename);
 
-    file = mc_open (filename, O_CREAT | O_WRONLY | O_TRUNC,
+    file = mc_open (vpath, O_CREAT | O_WRONLY | O_TRUNC,
                     S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH | O_BINARY);
+    vfs_path_free (vpath);
     if (file == -1)
         return 0;
 

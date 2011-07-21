@@ -253,11 +253,13 @@ edit_load_file_fast (WEdit * edit, const char *filename)
     long buf, buf2;
     int file = -1;
     int ret = 1;
+    vfs_path_t *vpath = vfs_path_from_str (filename);
 
     edit->curs2 = edit->last_byte;
     buf2 = edit->curs2 >> S_EDIT_BUF_SIZE;
 
-    file = mc_open (filename, O_RDONLY | O_BINARY);
+    file = mc_open (vpath, O_RDONLY | O_BINARY);
+    vfs_path_free (vpath);
     if (file == -1)
     {
         gchar *errmsg;
@@ -362,9 +364,10 @@ check_file_access (WEdit * edit, const char *filename, struct stat *st)
 {
     int file;
     gchar *errmsg = NULL;
+    vfs_path_t *vpath = vfs_path_from_str (filename);
 
     /* Try opening an existing file */
-    file = mc_open (filename, O_NONBLOCK | O_RDONLY | O_BINARY, 0666);
+    file = mc_open (vpath, O_NONBLOCK | O_RDONLY | O_BINARY, 0666);
 
     if (file < 0)
     {
@@ -372,7 +375,7 @@ check_file_access (WEdit * edit, const char *filename, struct stat *st)
          * Try creating the file. O_EXCL prevents following broken links
          * and opening existing files.
          */
-        file = mc_open (filename, O_NONBLOCK | O_RDONLY | O_BINARY | O_CREAT | O_EXCL, 0666);
+        file = mc_open (vpath, O_NONBLOCK | O_RDONLY | O_BINARY | O_CREAT | O_EXCL, 0666);
         if (file < 0)
         {
             errmsg = g_strdup_printf (_("Cannot open %s for reading"), filename);
@@ -418,6 +421,7 @@ check_file_access (WEdit * edit, const char *filename, struct stat *st)
         g_free (errmsg);
         return 1;
     }
+    vfs_path_free (vpath);
     return 0;
 }
 
@@ -2078,6 +2082,7 @@ edit_insert_file (WEdit * edit, const char *filename)
 {
     char *p;
     long ins_len = 0;
+    vfs_path_t *vpath = vfs_path_from_str (filename);
 
     p = edit_get_filter (filename);
     if (p != NULL)
@@ -2097,6 +2102,7 @@ edit_insert_file (WEdit * edit, const char *filename)
                 edit_error_dialog (_("Error"), errmsg);
                 g_free (errmsg);
                 g_free (p);
+                vfs_path_free (vpath);
                 return 0;
             }
         }
@@ -2107,6 +2113,7 @@ edit_insert_file (WEdit * edit, const char *filename)
             edit_error_dialog (_("Error"), errmsg);
             g_free (errmsg);
             g_free (p);
+            vfs_path_free (vpath);
             return 0;
         }
         g_free (p);
@@ -2117,7 +2124,7 @@ edit_insert_file (WEdit * edit, const char *filename)
         long current = edit->curs1;
         int vertical_insertion = 0;
         char *buf;
-        file = mc_open (filename, O_RDONLY | O_BINARY);
+        file = mc_open (vpath, O_RDONLY | O_BINARY);
         if (file == -1)
             return 0;
         buf = g_malloc0 (TEMP_BUF_LEN);
@@ -2166,8 +2173,12 @@ edit_insert_file (WEdit * edit, const char *filename)
         g_free (buf);
         mc_close (file);
         if (blocklen != 0)
+        {
+            vfs_path_free (vpath);
             return 0;
+        }
     }
+    vfs_path_free (vpath);
     return ins_len;
 }
 
