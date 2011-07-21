@@ -371,6 +371,7 @@ make_symlink (FileOpContext * ctx, const char *src_path, const char *dst_path)
     FileProgressStatus return_status;
     struct stat sb;
     gboolean dst_is_symlink;
+    vfs_path_t *link_target_vpath;
 
     vfs_path_t *src_vpath = vfs_path_from_str (src_path);
     vfs_path_t *dst_vpath = vfs_path_from_str (dst_path);
@@ -440,12 +441,15 @@ make_symlink (FileOpContext * ctx, const char *src_path, const char *dst_path)
             g_free (q);
         }
     }
+    link_target_vpath = vfs_path_from_str_flags (link_target, VPF_NO_CANON);
+
   retry_dst_symlink:
-    if (mc_symlink (link_target, dst_path) == 0)
+    if (mc_symlink (link_target_vpath, dst_vpath) == 0)
     {
         /* Success */
         vfs_path_free (src_vpath);
         vfs_path_free (dst_vpath);
+        vfs_path_free (link_target_vpath);
         return FILE_CONT;
     }
     /*
@@ -455,11 +459,12 @@ make_symlink (FileOpContext * ctx, const char *src_path, const char *dst_path)
     if (dst_is_symlink)
     {
         if (mc_unlink (dst_vpath) == 0)
-            if (mc_symlink (link_target, dst_path) == 0)
+            if (mc_symlink (link_target_vpath, dst_vpath) == 0)
             {
                 /* Success */
                 vfs_path_free (src_vpath);
                 vfs_path_free (dst_vpath);
+                vfs_path_free (link_target_vpath);
 
                 return FILE_CONT;
             }
@@ -476,6 +481,7 @@ make_symlink (FileOpContext * ctx, const char *src_path, const char *dst_path)
     }
     vfs_path_free (src_vpath);
     vfs_path_free (dst_vpath);
+    vfs_path_free (link_target_vpath);
     return return_status;
 }
 
