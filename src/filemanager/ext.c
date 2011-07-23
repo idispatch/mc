@@ -92,7 +92,7 @@ static char *data = NULL;
 static void
 exec_extension (const char *filename, const char *lc_data, int *move_dir, int start_line)
 {
-    char *file_name;
+    vfs_path_t *file_name_vpath;
     int cmd_file_fd;
     FILE *cmd_file;
     char *cmd = NULL;
@@ -130,7 +130,7 @@ exec_extension (const char *filename, const char *lc_data, int *move_dir, int st
      * Sometimes it's not needed (e.g. for %cd and %view commands),
      * but it's easier to create it anyway.
      */
-    cmd_file_fd = mc_mkstemps (&file_name, "mcext", SCRIPT_SUFFIX);
+    cmd_file_fd = mc_mkstemps (&file_name_vpath, "mcext", SCRIPT_SUFFIX);
 
     if (cmd_file_fd == -1)
     {
@@ -157,13 +157,13 @@ exec_extension (const char *filename, const char *lc_data, int *move_dir, int st
                 {
                     /* User canceled */
                     fclose (cmd_file);
-                    unlink (file_name);
+                    mc_unlink (file_name_vpath);
                     if (localcopy)
                     {
                         mc_ungetlocalcopy (filename, localcopy, 0);
                         g_free (localcopy);
                     }
-                    g_free (file_name);
+                    vfs_path_free (file_name_vpath);
                     vfs_path_free (vpath);
                     return;
                 }
@@ -233,8 +233,8 @@ exec_extension (const char *filename, const char *lc_data, int *move_dir, int st
                                     if (localcopy == NULL)
                                     {
                                         fclose (cmd_file);
-                                        unlink (file_name);
-                                        g_free (file_name);
+                                        mc_unlink (file_name_vpath);
+                                        vfs_path_free (file_name_vpath);
                                         vfs_path_free (vpath);
                                         return;
                                     }
@@ -286,22 +286,28 @@ exec_extension (const char *filename, const char *lc_data, int *move_dir, int st
      * so we clean up after calling view().
      */
     if (!run_view)
+    {
+        char *file_name = vfs_path_to_str (file_name_vpath);
         fprintf (cmd_file, "\n/bin/rm -f %s\n", file_name);
+        g_free (file_name);
+    }
 
     fclose (cmd_file);
 
     if ((run_view && !written_nonspace) || is_cd)
     {
-        unlink (file_name);
-        g_free (file_name);
-        file_name = NULL;
+        mc_unlink (file_name_vpath);
+        vfs_path_free (file_name_vpath);
+        file_name_vpath = NULL;
     }
     else
     {
+        char *file_name = vfs_path_to_str (file_name_vpath);
         /* Set executable flag on the command file ... */
-        chmod (file_name, S_IRWXU);
+        mc_chmod (file_name_vpath, S_IRWXU);
         /* ... but don't rely on it - run /bin/sh explicitly */
         cmd = g_strconcat ("/bin/sh ", file_name, (char *) NULL);
+        g_free (file_name);
     }
 
     if (run_view)
@@ -321,7 +327,7 @@ exec_extension (const char *filename, const char *lc_data, int *move_dir, int st
         if (written_nonspace)
         {
             ret = mcview_viewer (cmd, filename, start_line);
-            unlink (file_name);
+            mc_unlink (file_name_vpath);
         }
         else
             ret = mcview_viewer (NULL, filename, start_line);
@@ -375,7 +381,7 @@ exec_extension (const char *filename, const char *lc_data, int *move_dir, int st
         }
     }
 
-    g_free (file_name);
+    vfs_path_free (file_name_vpath);
     g_free (cmd);
 
     if (localcopy)

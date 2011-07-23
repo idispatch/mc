@@ -2143,11 +2143,17 @@ ftpfs_fh_open (struct vfs_class *me, vfs_file_handler_t * fh, int flags, mode_t 
         {
             if (!fh->ino->localname)
             {
-                int handle = vfs_mkstemps (&fh->ino->localname, me->name,
+                vfs_path_t *vpath;
+                int handle = vfs_mkstemps (&vpath, me->name,
                                            fh->ino->ent->name);
                 if (handle == -1)
+                {
+                    vfs_path_free (vpath);
                     goto fail;
+                }
                 close (handle);
+                fh->ino->localname = vfs_path_to_str (vpath);
+                vfs_path_free (vpath);
                 ftp->append = flags & O_APPEND;
             }
             return 0;
