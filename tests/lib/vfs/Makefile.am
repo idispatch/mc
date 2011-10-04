@@ -11,6 +11,7 @@ LIBS=@CHECK_LIBS@  \
 TESTS = \
 	canonicalize_pathname \
 	current_dir \
+	path_cmp \
 	path_manipulations \
 	path_recode \
 	path_serialize \
@@ -27,6 +28,9 @@ canonicalize_pathname_SOURCES = \
 
 current_dir_SOURCES = \
 	current_dir.c
+
+path_cmp_SOURCES = \
+	path_cmp.c
 
 path_manipulations_SOURCES = \
 	path_manipulations.c
