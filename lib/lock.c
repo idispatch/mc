@@ -193,13 +193,13 @@ lock_get_info (const char *lockfname)
    Warning: Might do screen refresh and lose edit->force */
 
 int
-lock_file (const char *fname)
+lock_file (const vfs_path_t * fname_vpath)
 {
     char *lockfname, *newlock, *msg, *lock;
     struct stat statbuf;
     struct lock_s *lockinfo;
     gboolean symlink_ok;
-    vfs_path_t *vpath;
+    char *fname = vfs_path_to_str (fname_vpath);
 
     /* Just to be sure (and don't lock new file) */
     if (fname == NULL || *fname == '\0')
@@ -207,20 +207,20 @@ lock_file (const char *fname)
 
     fname = tilde_expand (fname);
 
-    vpath = vfs_path_from_str (fname);
-
     /* Locking on VFS is not supported */
-    if (!vfs_file_is_local (vpath))
+    if (!vfs_file_is_local (fname_vpath))
     {
-        g_free ((gpointer) fname);
-        vfs_path_free (vpath);
+        vfs_path_free ((vfs_path_t *) fname_vpath);
+        g_free (fname);
         return 0;
     }
-    vfs_path_free (vpath);
+    vfs_path_free ((vfs_path_t *) fname_vpath);
+    g_free (fname);
 
     /* Check if already locked */
     lockfname = lock_build_symlink_name (fname);
-    g_free ((gpointer) fname);
+    vfs_path_free ((vfs_path_t *) fname_vpath);
+
     if (lockfname == NULL)
         return 0;
 
@@ -275,10 +275,11 @@ lock_file (const char *fname)
  */
 
 int
-unlock_file (const char *fname)
+unlock_file (const vfs_path_t * fname_vpath)
 {
     char *lockfname, *lock;
     struct stat statbuf;
+    char *fname = vfs_path_to_str (fname_vpath);
 
     /* Just to be sure */
     if (fname == NULL || *fname == '\0')
@@ -286,7 +287,9 @@ unlock_file (const char *fname)
 
     fname = tilde_expand (fname);
     lockfname = lock_build_symlink_name (fname);
-    g_free ((gpointer) fname);
+
+    vfs_path_free ((vfs_path_t *) fname_vpath);
+    g_free (fname);
 
     if (lockfname == NULL)
         return 0;
