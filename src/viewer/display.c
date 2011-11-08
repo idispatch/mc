@@ -143,7 +143,10 @@ mcview_display_status (mcview_t * view)
     widget_move (view, top, left);
     tty_draw_hline (-1, -1, ' ', width);
 
-    file_label = view->filename ? view->filename : view->command ? view->command : "";
+    file_label =
+        view->filename_vpath !=
+        NULL ? vfs_path_get_last_path_str (view->filename_vpath) : view->command !=
+        NULL ? view->command : "";
     file_label_width = str_term_width1 (file_label) - 2;
     if (width > 40)
     {
