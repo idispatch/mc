@@ -239,7 +239,11 @@ test_condition (WEdit * edit_widget, char *p, int *condition)
             p = extract_arg (p, arg, sizeof (arg));
 #ifdef USE_INTERNAL_EDIT
             if (edit_widget != NULL)
-                *condition = mc_search (arg, edit_get_file_name (edit_widget), search_type) ? 1 : 0;
+            {
+                char *edit_filename = edit_get_file_name (edit_widget);
+                *condition = mc_search (arg, edit_filename, search_type) ? 1 : 0;
+                g_free (edit_filename);
+            }
             else
 #endif
                 *condition = panel != NULL &&
@@ -752,11 +756,11 @@ expand_format (struct WEdit *edit_widget, char c, gboolean do_quote)
                 return g_strdup ("");
             panel = other_panel;
         }
-        fname = panel->dir.list[panel->selected].fname;
+        fname = g_strdup (panel->dir.list[panel->selected].fname);
     }
 #ifdef USE_INTERNAL_EDIT
     else if (mc_global.mc_run_mode == MC_RUN_EDITOR)
-        fname = (char *) edit_get_file_name (edit_widget);
+        fname = edit_get_file_name (edit_widget);
 #endif
 
     if (do_quote)
@@ -770,9 +774,13 @@ expand_format (struct WEdit *edit_widget, char c, gboolean do_quote)
     {
     case 'f':
     case 'p':
-        return (*quote_func) (fname, 0);
+        result = (*quote_func) (fname, 0);
+        g_free (fname);
+        return result;
     case 'x':
-        return (*quote_func) (extension (fname), 0);
+        result = (*quote_func) (extension (fname), 0);
+        g_free (fname);
+        return result;
     case 'd':
         {
             char *cwd;
@@ -786,13 +794,17 @@ expand_format (struct WEdit *edit_widget, char c, gboolean do_quote)
             qstr = (*quote_func) (cwd, 0);
 
             g_free (cwd);
+            g_free (fname);
 
             return qstr;
         }
     case 'i':                  /* indent equal number cursor position in line */
 #ifdef USE_INTERNAL_EDIT
         if (edit_widget)
+        {
+            g_free (fname);
             return g_strnfill (edit_get_curs_col (edit_widget), ' ');
+        }
 #endif
         break;
     case 'y':                  /* syntax type */
@@ -801,7 +813,10 @@ expand_format (struct WEdit *edit_widget, char c, gboolean do_quote)
         {
             const char *syntax_type = edit_get_syntax_type (edit_widget);
             if (syntax_type != NULL)
+            {
+                g_free (fname);
                 return g_strdup (syntax_type);
+            }
         }
 #endif
         break;
@@ -812,28 +827,44 @@ expand_format (struct WEdit *edit_widget, char c, gboolean do_quote)
             if (edit_widget)
             {
                 char *file = mc_config_get_full_path (EDIT_BLOCK_FILE);
+                g_free (fname);
                 fname = (*quote_func) (file, 0);
                 g_free (file);
                 return fname;
             }
 #endif
             if (c_lc == 'b')
-                return strip_ext ((*quote_func) (fname, 0));
+            {
+                result = strip_ext ((*quote_func) (fname, 0));
+                g_free (fname);
+                return result;
+            }
             break;
         }
     case 'n':                  /* strip extension in editor */
 #ifdef USE_INTERNAL_EDIT
         if (edit_widget)
-            return strip_ext ((*quote_func) (fname, 0));
+        {
+            result = strip_ext ((*quote_func) (fname, 0));
+            g_free (fname);
+            return result;
+        }
 #endif
         break;
     case 'm':                  /* menu file name */
         if (menu)
+        {
+            g_free (fname);
             return (*quote_func) (menu, 0);
+        }
         break;
     case 's':
         if (!panel || !panel->marked)
-            return (*quote_func) (fname, 0);
+        {
+            result = (*quote_func) (fname, 0);
+            g_free (fname);
+            return result;
+        }
 
         /* Fall through */
 
@@ -842,6 +873,8 @@ expand_format (struct WEdit *edit_widget, char c, gboolean do_quote)
         {
             int length = 2, i;
             char *block, *tmp;
+
+            g_free (fname);
 
             if (!panel)
                 return g_strdup ("");
@@ -867,6 +900,7 @@ expand_format (struct WEdit *edit_widget, char c, gboolean do_quote)
     }                           /* switch */
     result = g_strdup ("% ");
     result[1] = c;
+    g_free (fname);
     return result;
 }
 

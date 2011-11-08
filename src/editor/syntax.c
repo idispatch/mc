@@ -1507,16 +1507,20 @@ edit_load_syntax (WEdit * edit, char ***pnames, const char *type)
 
     if (edit != NULL)
     {
-        if (!edit->filename)
+        if (edit->filename_vpath == NULL)
             return;
-        if (!*edit->filename && !type)
+        if (*(vfs_path_get_by_index (edit->filename_vpath, 0)->path) && !type)
             return;
     }
     f = mc_config_get_full_path (EDIT_SYNTAX_FILE);
     if (edit != NULL)
-        r = edit_read_syntax_file (edit, pnames, f, edit->filename,
+    {
+        char *tmp_f = vfs_path_to_str (edit->filename_vpath);
+        r = edit_read_syntax_file (edit, pnames, f, tmp_f,
                                    get_first_editor_line (edit),
                                    option_auto_syntax ? NULL : edit->syntax_type);
+        g_free (tmp_f);
+    }
     else
         r = edit_read_syntax_file (NULL, pnames, f, NULL, "", NULL);
     if (r == -1)
