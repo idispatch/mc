@@ -65,7 +65,7 @@ What to do with this?
         int f = !strcmp( remote_path, "/~" );
         if (f || !strncmp( remote_path, "/~/", 3 )) {
             char *s;
-            s = concat_dir_and_file( qhome (*bucket), remote_path +3-f );
+            s = mc_build_filename ( qhome (*bucket), remote_path +3-f, NULL );
             g_free (remote_path);
             remote_path = s;
         }
@@ -627,7 +627,7 @@ ftpfs_login_server (struct vfs_class *me, struct vfs_s_super *super, const char 
 
         reply_up = g_ascii_strup (reply_string, -1);
         SUP->remote_is_amiga = strstr (reply_up, "AMIGA") != 0;
-        if (strstr (reply_up, " SPFTP/1.0.0000 SERVER ")) /* handles `LIST -la` in a weird way */
+        if (strstr (reply_up, " SPFTP/1.0.0000 SERVER "))       /* handles `LIST -la` in a weird way */
             SUP->strict = RFC_STRICT;
         g_free (reply_up);
 
@@ -1680,8 +1680,10 @@ ftpfs_dir_load (struct vfs_class *me, struct vfs_s_inode *dir, char *remote_path
         sock = ftpfs_open_data_connection (me, super, "LIST -la", 0, TYPE_ASCII, 0);
     else
     {
+        char *path;
+
         /* Trailing "/." is necessary if remote_path is a symlink */
-        char *path = concat_dir_and_file (remote_path, ".");
+        path = mc_build_filename (remote_path, ".", NULL);
         sock = ftpfs_open_data_connection (me, super, "LIST -la", path, TYPE_ASCII, 0);
         g_free (path);
     }
@@ -2105,7 +2107,7 @@ ftpfs_rmdir (const vfs_path_t * vpath)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-ftpfs_fh_free_data (vfs_file_handler_t *fh)
+ftpfs_fh_free_data (vfs_file_handler_t * fh)
 {
     if (fh != NULL)
     {

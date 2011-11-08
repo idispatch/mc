@@ -161,7 +161,7 @@ examine_cd (const char *_path)
             *s = 0;
             if (*p)
             {
-                r = concat_dir_and_file (p, q);
+                r = mc_build_filename (p, q, NULL);
                 result = do_cd (r, cd_parse_command);
                 g_free (r);
             }
