@@ -141,7 +141,11 @@ examine_cd (const char *_path)
     }
     *r = 0;
 
-    result = do_cd (q, cd_parse_command);
+    {
+        vfs_path_t *q_vpath = vfs_path_from_str (q);
+        result = do_cd (q_vpath, cd_parse_command);
+        vfs_path_free (q_vpath);
+    }
 
     /* CDPATH handling */
     if (*q != PATH_SEP && !result)
@@ -161,9 +165,9 @@ examine_cd (const char *_path)
             *s = 0;
             if (*p)
             {
-                r = mc_build_filename (p, q, NULL);
-                result = do_cd (r, cd_parse_command);
-                g_free (r);
+                vfs_path_t *r_vpath = vfs_path_build_filename (p, q, NULL);
+                result = do_cd (r_vpath, cd_parse_command);
+                vfs_path_free (r_vpath);
             }
             *s = c;
             p = s + 1;

@@ -59,7 +59,7 @@
 #include "filemanager/layout.h" /* command_prompt */
 #include "filemanager/ext.h"    /* flush_extension_file() */
 #include "filemanager/command.h"        /* cmdline */
-#include "filemanager/panel.h"          /* panalized_panel */
+#include "filemanager/panel.h"  /* panalized_panel */
 
 #include "vfs/plugins_init.h"
 
@@ -259,15 +259,17 @@ init_sigchld (void)
 /* --------------------------------------------------------------------------------------------- */
 
 int
-do_cd (const char *new_dir, enum cd_enum exact)
+do_cd (const vfs_path_t * new_dir_vpath, enum cd_enum exact)
 {
     gboolean res;
-    const char *_new_dir = new_dir;
+    const vfs_path_t *_new_dir_vpath = new_dir_vpath;
+    const char *new_dir_str = vfs_path_get_by_index (new_dir_vpath, 0)->path;
 
-    if (current_panel->is_panelized && _new_dir[0] == '.' && _new_dir[1] == '.' && _new_dir[2] == 0)
-        _new_dir = panelized_panel.root;
+    if (current_panel->is_panelized && new_dir_str[0] == '.' && new_dir_str[1] == '.'
+        && new_dir_str[2] == 0)
+        _new_dir_vpath = panelized_panel.root_vpath;
 
-    res = do_panel_cd (current_panel, _new_dir, exact);
+    res = do_panel_cd (current_panel, _new_dir_vpath, exact);
 
 #if HAVE_CHARSET
     if (res)

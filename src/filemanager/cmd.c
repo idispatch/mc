@@ -159,6 +159,7 @@ do_view_cmd (gboolean normal)
     /* Directories are viewed by changing to them */
     if (S_ISDIR (selection (current_panel)->st.st_mode) || link_isdir (selection (current_panel)))
     {
+        vfs_path_t *fname_vpath;
         if (confirm_view_dir && (current_panel->marked || current_panel->dirs_marked))
         {
             if (query_dialog
@@ -168,8 +169,10 @@ do_view_cmd (gboolean normal)
                 return;
             }
         }
-        if (!do_cd (selection (current_panel)->fname, cd_exact))
+        fname_vpath = vfs_path_from_str (selection (current_panel)->fname);
+        if (!do_cd (fname_vpath, cd_exact))
             message (D_ERROR, MSG_ERROR, _("Cannot change directory"));
+        vfs_path_free (fname_vpath);
     }
     else
     {
@@ -565,8 +568,12 @@ nice_cd (const char *text, const char *xtext, const char *help,
         g_free (tmp);
     }
 
-    if (!do_panel_cd (MENU_PANEL, cd_path, cd_parse_command))
-        message (D_ERROR, MSG_ERROR, _("Cannot chdir to \"%s\""), cd_path);
+    {
+        vfs_path_t *cd_vpath = vfs_path_from_str (cd_path);
+        if (!do_panel_cd (MENU_PANEL, cd_vpath, cd_parse_command))
+            message (D_ERROR, MSG_ERROR, _("Cannot chdir to \"%s\""), cd_path);
+        vfs_path_free (cd_vpath);
+    }
     g_free (cd_path);
     g_free (machine);
 }
@@ -1264,13 +1271,16 @@ void
 vfs_list (void)
 {
     char *target;
+    vfs_path_t *target_vpath;
 
     target = hotlist_show (LIST_VFSLIST);
     if (!target)
         return;
 
-    if (!do_cd (target, cd_exact))
+    target_vpath = vfs_path_from_str (target);
+    if (!do_cd (target_vpath, cd_exact))
         message (D_ERROR, MSG_ERROR, _("Cannot change directory"));
+    vfs_path_free (target_vpath);
     g_free (target);
 }
 #endif /* ENABLE_VFS */
