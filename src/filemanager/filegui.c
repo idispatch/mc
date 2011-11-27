@@ -346,10 +346,16 @@ overwrite_query_dialog (FileOpContext * ctx, enum OperationMode mode)
 
     char buffer[BUF_SMALL];
     const char *title;
-    const char *stripped_name = strip_home_and_password (ui->replace_filename);
     int stripped_name_len;
-
+    vfs_path_t *stripped_vpath = vfs_path_from_str (ui->replace_filename);
+    const char *stripped_name;
+    char *stripped_name_orig;
     int result;
+
+    stripped_name = stripped_name_orig =
+        vfs_path_to_str_flags (stripped_vpath, 0, VPF_STRIP_HOME | VPF_STRIP_PASSWORD);
+
+    vfs_path_free (stripped_vpath);
 
     widgets_len = g_new0 (int, num);
 
@@ -459,6 +465,7 @@ overwrite_query_dialog (FileOpContext * ctx, enum OperationMode mode)
     destroy_dlg (ui->replace_dlg);
 
     g_free (widgets_len);
+    g_free (stripped_name_orig);
 
     return (result == B_CANCEL) ? REPLACE_ABORT : (replace_action_t) result;
 #undef ADD_RD_LABEL
@@ -1035,7 +1042,11 @@ file_mask_dialog (FileOpContext * ctx, FileOperation operation,
     ctx->op_preserve = filegui__check_attrs_on_fs (def_text);
 
     /* filter out a possible password from def_text */
-    tmp = strip_password (g_strdup (def_text), 1);
+    {
+        vfs_path_t *vpath = vfs_path_from_str (def_text);
+        tmp = vfs_path_to_str_flags (vpath, 0, VPF_STRIP_PASSWORD);
+        vfs_path_free (vpath);
+    }
     if (source_easy_patterns)
         def_text_secure = strutils_glob_escape (tmp);
     else

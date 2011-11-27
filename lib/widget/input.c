@@ -237,14 +237,17 @@ push_history (WInput * in, const char *text)
     if (in->history_name != NULL)
     {
         /* FIXME: It is the strange code. Rewrite is needed. */
-
         const char *p = in->history_name + 3;
 
         for (i = 0; i < ELEMENTS; i++)
             if (strcmp (p, password_input_fields[i]) == 0)
+            {
+                vfs_path_t *vpath = vfs_path_from_str (t);
+                g_free (t);
+                t = vfs_path_to_str_flags (vpath, 0, VPF_STRIP_PASSWORD);
+                vfs_path_free (vpath);
                 break;
-
-        strip_password (t, i >= ELEMENTS);
+            }
     }
 
     if (in->history == NULL || in->history->data == NULL || strcmp (in->history->data, t) != 0 ||
