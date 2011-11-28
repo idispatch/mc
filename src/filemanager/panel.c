@@ -2415,16 +2415,17 @@ do_enter_on_file_entry (file_entry * fe)
         return 1;
     }
 
+    full_name_vpath = vfs_path_append_new (current_panel->cwd_vpath, fe->fname, NULL);
+
     /* Try associated command */
-    if (regex_command (fe->fname, "Open", NULL) != 0)
+    if (regex_command (full_name_vpath, "Open", NULL) != 0)
+    {
+        vfs_path_free (full_name_vpath);
         return 1;
+    }
 
     /* Check if the file is executable */
-    if (!is_exe (fe->st.st_mode)
-        return 0;
-
-    full_name_vpath = vfs_path_append_new (current_panel->cwd_vpath, fe->fname, NULL);
-    ok = if_link_is_exe (full_name_vpath, fe));
+    ok = (is_exe (fe->st.st_mode &&) if_link_is_exe (full_name_vpath, fe));
     vfs_path_free (full_name_vpath);
     if (!ok)
         return 0;

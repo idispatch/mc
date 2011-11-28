@@ -323,11 +323,11 @@ exec_extension (const char *filename, const char *lc_data, int *move_dir, int st
          */
         if (written_nonspace)
         {
-            ret = mcview_viewer (cmd, filename, start_line);
+            ret = mcview_viewer (cmd, vpath, start_line);
             mc_unlink (file_name_vpath);
         }
         else
-            ret = mcview_viewer (NULL, filename, start_line);
+            ret = mcview_viewer (NULL, vpath, start_line);
 
         if (move_dir != NULL)
             switch (ret)
@@ -449,12 +449,12 @@ get_popen_information (const char *cmd_file, const char *args, char *buf, int bu
  */
 
 static int
-get_file_type_local (const char *filename, char *buf, int buflen)
+get_file_type_local (const vfs_path_t * filename_vpath, char *buf, int buflen)
 {
     char *tmp;
     int ret;
 
-    tmp = name_quote (filename, 0);
+    tmp = name_quote (vfs_path_get_last_path_str (filename_vpath), 0);
     ret = get_popen_information (FILE_CMD, tmp, buf, buflen);
     g_free (tmp);
 
@@ -469,12 +469,12 @@ get_file_type_local (const char *filename, char *buf, int buflen)
 
 #ifdef HAVE_CHARSET
 static int
-get_file_encoding_local (const char *filename, char *buf, int buflen)
+get_file_encoding_local (const vfs_path_t * filename_vpath, char *buf, int buflen)
 {
     char *tmp, *lang, *args;
     int ret;
 
-    tmp = name_quote (filename, 0);
+    tmp = name_quote (vfs_path_get_last_path_str (filename_vpath), 0);
     lang = name_quote (autodetect_codeset, 0);
     args = g_strconcat (" -L", lang, " -i ", tmp, (char *) NULL);
 
@@ -497,7 +497,7 @@ get_file_encoding_local (const char *filename, char *buf, int buflen)
  */
 
 static int
-regex_check_type (const char *filename, const char *ptr, int *have_type)
+regex_check_type (const vfs_path_t * filename_vpath, const char *ptr, int *have_type)
 {
     int found = 0;
 
@@ -535,8 +535,7 @@ regex_check_type (const char *filename, const char *ptr, int *have_type)
 
 #ifdef HAVE_CHARSET
         got_encoding_data = is_autodetect_codeset_enabled
-            ? get_file_encoding_local (vfs_path_get_last_path_str (localfile_vpath), encoding_id,
-                                       sizeof (encoding_id)) : 0;
+            ? get_file_encoding_local (localfile_vpath, encoding_id, sizeof (encoding_id)) : 0;
 
         if (got_encoding_data > 0)
         {
@@ -558,9 +557,7 @@ regex_check_type (const char *filename, const char *ptr, int *have_type)
         mc_ungetlocalcopy (filename_vpath, localfile_vpath, FALSE);
         vfs_path_free (filename_vpath);
 
-        got_data =
-            get_file_type_local (vfs_path_get_last_path_str (localfile_vpath), content_string,
-                                 sizeof (content_string));
+        got_data = get_file_type_local (localfile_vpath, content_string, sizeof (content_string));
 
         if (got_data > 0)
         {
@@ -633,10 +630,10 @@ flush_extension_file (void)
  */
 
 int
-regex_command (const char *filename, const char *action, int *move_dir)
+regex_command (const vfs_path_t * filename_vpath, const char *action, int *move_dir)
 {
-    char *p, *q, *r, c;
-    int file_len = strlen (filename);
+    char *filename, *p, *q, *r, c;
+    int file_len = vfs_path_len (filename_vpath);
     int found = 0;
     int error_flag = 0;
     int ret = 0;
@@ -721,16 +718,11 @@ regex_command (const char *filename, const char *action, int *move_dir)
         }
     }
 
-    {
-        vfs_path_t *vpath;
-
-        vpath = vfs_path_from_str (filename);
-        mc_stat (vpath, &mystat);
-        vfs_path_free (vpath);
-    }
+    mc_stat (filename_vpath, &mystat);
 
     include_target = NULL;
     include_target_len = 0;
+    filename = vfs_path_to_str (filename_vpath);
     for (p = data; *p; p++)
     {
         for (q = p; *q == ' ' || *q == '\t'; q++);
@@ -791,7 +783,7 @@ regex_command (const char *filename, const char *action, int *move_dir)
             {
                 int res;
                 p += 5;
-                res = regex_check_type (filename, p, &have_type);
+                res = regex_check_type (filename_vpath, p, &have_type);
                 if (res == 1)
                     found = 1;
                 if (res == -1)
@@ -872,6 +864,7 @@ regex_command (const char *filename, const char *action, int *move_dir)
                 break;
         }
     }
+    g_free (filename);
     if (error_flag)
         return -1;
     return ret;
