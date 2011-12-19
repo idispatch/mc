@@ -382,8 +382,8 @@ command_new (int y, int x, int cols)
     };
 
     cmd = input_new (y, x, (int *) command_colors, cols, "", "cmdline",
-                     INPUT_COMPLETE_DEFAULT | INPUT_COMPLETE_CD | INPUT_COMPLETE_COMMANDS |
-                     INPUT_COMPLETE_SHELL_ESC);
+                     INPUT_COMPLETE_DEFAULT | INPUT_COMPLETE_FILENAMES | INPUT_COMPLETE_CD |
+                     INPUT_COMPLETE_COMMANDS | INPUT_COMPLETE_SHELL_ESC);
 
     /* Add our hooks */
     cmd->widget.callback = command_callback;

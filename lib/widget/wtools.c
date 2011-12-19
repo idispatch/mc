@@ -184,7 +184,8 @@ fg_input_dialog_help (const char *header, const char *text, const char *help,
     QuickWidget quick_widgets[] = {
         /* 0 */ QUICK_BUTTON (6, 64, 1, 0, N_("&Cancel"), B_CANCEL, NULL),
         /* 1 */ QUICK_BUTTON (3, 64, 1, 0, N_("&OK"), B_ENTER, NULL),
-        /* 2 */ QUICK_INPUT (3, 64, 0, 0, def_text, 58, 0, NULL, &my_str),
+        /* 2 */ QUICK_INPUT (3, 64, 0, 0, def_text, 58, FALSE, NULL, &my_str,
+                             INPUT_COMPLETE_DEFAULT),
         /* 3 */ QUICK_LABEL (3, 64, 2, 0, ""),
         QUICK_END
     };
@@ -218,7 +219,7 @@ fg_input_dialog_help (const char *header, const char *text, const char *help,
        and hide characters with "*".  Don't save passwords in history! */
     if (def_text == INPUT_PASSWORD)
     {
-        quick_widgets[2].u.input.flags = 1;
+        quick_widgets[2].u.input.is_passwd = TRUE;
         histname[3] = '\0';
         quick_widgets[2].u.input.text = "";
     }

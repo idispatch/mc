@@ -1227,7 +1227,16 @@ complete_engine (WInput * in, int what_to_do)
         for (; s >= in->buffer; str_prev_char (&s))
         {
             start = s - in->buffer;
-            if (strchr (" \t;|<>", *s) != NULL)
+
+            if (!(in->completion_flags & INPUT_COMPLETE_FILES_ESC))
+            {
+                if (*s == ' ' && s > in->buffer && *(s - 1) != '\\')
+                {
+                    break;
+                }
+            }
+
+            if (strchr ("\t;|<>", *s) != NULL)
                 break;
         }
 

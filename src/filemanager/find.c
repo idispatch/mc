@@ -640,13 +640,13 @@ find_parameters (char **start_dir, ssize_t * start_dir_len,
     add_widget (find_dlg, content_label);
 
     in_name = input_new (8, 3, input_get_default_colors (),
-                         FIND_X / 2 - 4, INPUT_LAST_TEXT, "name", INPUT_COMPLETE_DEFAULT);
+                         FIND_X / 2 - 4, INPUT_LAST_TEXT, "name", INPUT_COMPLETE_DEFAULT_AND_FILES);
     add_widget (find_dlg, in_name);
     add_widget (find_dlg, label_new (7, 3, _("File name:")));
 
     in_ignore = input_new (5, 3, input_get_default_colors (), FIND_X - 6,
                            options.ignore_dirs != NULL ? options.ignore_dirs : "",
-                           "ignoredirs", INPUT_COMPLETE_DEFAULT);
+                           "ignoredirs", INPUT_COMPLETE_DEFAULT_AND_FILES);
     widget_disable (in_ignore->widget, !options.ignore_dirs_enable);
     add_widget (find_dlg, in_ignore);
 
@@ -657,7 +657,7 @@ find_parameters (char **start_dir, ssize_t * start_dir_len,
     add_widget (find_dlg, button_new (3, FIND_X - b2 - 2, B_TREE, NORMAL_BUTTON, buts[2], 0));
 
     in_start = input_new (3, 3, input_get_default_colors (),
-                          FIND_X - b2 - 6, in_start_dir, "start", INPUT_COMPLETE_DEFAULT);
+                          FIND_X - b2 - 6, in_start_dir, "start", INPUT_COMPLETE_DEFAULT_AND_FILES);
     add_widget (find_dlg, in_start);
     add_widget (find_dlg, label_new (2, 3, _("Start at:")));
 

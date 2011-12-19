@@ -42,7 +42,7 @@
     }                                                                   \
 }
 
-#define QUICK_INPUT(x, xdiv, y, ydiv, txt, len_, flags_, hname, res)    \
+#define QUICK_INPUT(x, xdiv, y, ydiv, txt, len_, is_passwd_, hname, res, completion_flags_) \
 {                                                                       \
     .widget_type = quick_input,                                         \
     .relative_x = x,                                                    \
@@ -55,9 +55,10 @@
         .input = {                                                      \
             .text = txt,                                                \
             .len = len_,                                                \
-            .flags = flags_,                                            \
+            .is_passwd = is_passwd_,                                    \
             .histname = hname,                                          \
-            .result = res                                               \
+            .result = res,                                              \
+            .completion_flags = completion_flags_                       \
         }                                                               \
     }                                                                   \
 }
@@ -127,7 +128,6 @@
         .input = {                                                      \
             .text = NULL,                                               \
             .len = 0,                                                   \
-            .flags = 0,                                                 \
             .histname = NULL,                                           \
             .result = NULL                                              \
         }                                                               \
@@ -183,9 +183,10 @@ typedef struct
         {
             const char *text;
             int len;
-            int flags;          /* 1 -- is_password, 2 -- INPUT_COMPLETE_CD */
+            gboolean is_passwd; /* TRUE -- is password */
             const char *histname;
             char **result;
+            input_complete_t completion_flags;
         } input;
 
         struct

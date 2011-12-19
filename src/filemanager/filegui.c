@@ -945,14 +945,15 @@ file_mask_dialog (FileOpContext * ctx, FileOperation operation,
         /*  6 - OFFSET */
         QUICK_CHECKBOX (3, FMDX, 7, FMDY, N_("Follow &links"), &ctx->follow_links),
         /*  7 - OFFSET */
-        QUICK_INPUT (3, FMDX, 6, FMDY, "", 58, 0, "input2", &dest_dir),
+        QUICK_INPUT (3, FMDX, 6, FMDY, "", 58, FALSE, "input2", &dest_dir,
+                     INPUT_COMPLETE_DEFAULT_AND_FILES),
         /*  8 - OFFSET */
         QUICK_LABEL (3, FMDX, 5, FMDY, N_("to:")),
         /*  9 - OFFSET */
         QUICK_CHECKBOX (37, FMDX, 4, FMDY, N_("&Using shell patterns"), &source_easy_patterns),
         /* 10 - OFFSET */
-        QUICK_INPUT (3, FMDX, 3, FMDY, easy_patterns ? "*" : "^(.*)$", 58, 0, "input-def",
-                     &source_mask),
+        QUICK_INPUT (3, FMDX, 3, FMDY, easy_patterns ? "*" : "^(.*)$", 58, FALSE, "input-def",
+                     &source_mask, INPUT_COMPLETE_DEFAULT_AND_FILES),
         /* 11 - OFFSET */
         QUICK_LABEL (3, FMDX, 2, FMDY, fmd_buf),
         QUICK_END

@@ -255,7 +255,8 @@ select_unselect_cmd (const char *title, const char *history_name, gboolean do_se
         QUICK_CHECKBOX (3, DX, DY - 3, DY, N_("&Using shell patterns"), &shell_patterns),
         QUICK_CHECKBOX (DX / 2 + 1, DX, DY - 4, DY, N_("&Case sensitive"), &case_sens),
         QUICK_CHECKBOX (3, DX, DY - 4, DY, N_("&Files only"), &files_only),
-        QUICK_INPUT (3, DX, DY - 5, DY, INPUT_LAST_TEXT, DX - 6, 0, history_name, &reg_exp),
+        QUICK_INPUT (3, DX, DY - 5, DY, INPUT_LAST_TEXT, DX - 6, FALSE, history_name, &reg_exp,
+                     INPUT_COMPLETE_DEFAULT_AND_FILES),
         QUICK_END
     };
 
