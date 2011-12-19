@@ -1230,7 +1230,7 @@ complete_engine (WInput * in, int what_to_do)
 
             if (!(in->completion_flags & INPUT_COMPLETE_FILES_ESC))
             {
-                if (*s == ' ' && s > in->buffer && *(s - 1) != '\\')
+                if (*s == ' ' && !strutils_is_char_escaped (in->buffer, s))
                 {
                     break;
                 }
