@@ -200,14 +200,22 @@ static gboolean
 get_dotdot_dir_stat (const vfs_path_t * vpath, struct stat *st)
 {
     gboolean ret = FALSE;
-    const char *path = vfs_path_get_by_index (vpath, 0)->path;
-    if ((vpath != NULL) && (*path != '\0') && (st != NULL))
+
+    if ((vpath != NULL) && (st != NULL))
     {
-        struct stat s;
-        vfs_path_t *tmp_vpath = vfs_path_append_new (vpath, "..", NULL);
-        ret = mc_stat (tmp_vpath, &s) == 0;
-        vfs_path_free (tmp_vpath);
-        *st = s;
+        const char *path;
+
+        path = vfs_path_get_by_index (vpath, 0)->path;
+        if (path != NULL && *path != '\0')
+        {
+            vfs_path_t *tmp_vpath;
+            struct stat s;
+
+            tmp_vpath = vfs_path_append_new (vpath, "..", NULL);
+            ret = mc_stat (tmp_vpath, &s) == 0;
+            vfs_path_free (tmp_vpath);
+            *st = s;
+        }
     }
 
     return ret;

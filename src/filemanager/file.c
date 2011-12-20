@@ -292,28 +292,27 @@ check_hardlinks (const vfs_path_t * src_vpath, const vfs_path_t * dst_vpath, str
             lp_name_class = vfs_path_get_last_path_vfs (lp->src_vpath);
             stat_result = mc_stat (lp->src_vpath, &link_stat);
 
-            if (!stat_result && link_stat.st_ino == ino
+            if (stat_result == 0 && link_stat.st_ino == ino
                 && link_stat.st_dev == dev && lp_name_class == my_vfs)
             {
                 struct vfs_class *p_class, *dst_name_class;
+
                 dst_name_class = vfs_path_get_last_path_vfs (dst_vpath);
                 p_class = vfs_path_get_last_path_vfs (lp->dst_vpath);
 
-                if (dst_name_class == p_class)
-                {
-                    if (!mc_stat (lp->dst_vpath, &link_stat))
-                    {
-                        if (!mc_link (lp->dst_vpath, dst_vpath))
-                            return TRUE;
-                    }
-                }
+                if (dst_name_class == p_class &&
+                    mc_stat (lp->dst_vpath, &link_stat) == 0 &&
+                    mc_link (lp->dst_vpath, dst_vpath) == 0)
+                    return TRUE;
             }
+
             message (D_ERROR, MSG_ERROR, _("Cannot make the hardlink"));
             return FALSE;
         }
+
     lp = g_new0 (struct link, 1);
 
-    if (lp)
+    if (lp != NULL)
     {
         lp->vfs = my_vfs;
         lp->ino = ino;
@@ -790,9 +789,8 @@ move_file_file (FileOpTotalContext * tctx, FileOpContext * ctx, const char *s, c
 
     if (check_progress_buttons (ctx) == FILE_ABORT)
     {
-        vfs_path_free (src_vpath);
-        vfs_path_free (dst_vpath);
-        return FILE_ABORT;
+        return_status = FILE_ABORT;
+        goto ret;
     }
 
     mc_refresh ();
@@ -808,37 +806,32 @@ move_file_file (FileOpTotalContext * tctx, FileOpContext * ctx, const char *s, c
             if (return_status == FILE_SKIPALL)
                 ctx->skip_all = TRUE;
         }
+
         if (return_status != FILE_RETRY)
-        {
-            vfs_path_free (src_vpath);
-            vfs_path_free (dst_vpath);
-            return return_status;
-        }
+            goto ret;
     }
 
     if (mc_lstat (dst_vpath, &dst_stats) == 0)
     {
         if (src_stats.st_dev == dst_stats.st_dev && src_stats.st_ino == dst_stats.st_ino)
-            return warn_same_file (_("\"%s\"\nand\n\"%s\"\nare the same file"), s, d);
+        {
+            return_status = warn_same_file (_("\"%s\"\nand\n\"%s\"\nare the same file"), s, d);
+            goto ret;
+        }
 
         if (S_ISDIR (dst_stats.st_mode))
         {
             message (D_ERROR, MSG_ERROR, _("Cannot overwrite directory \"%s\""), d);
             do_refresh ();
-            vfs_path_free (src_vpath);
-            vfs_path_free (dst_vpath);
-            return FILE_SKIP;
+            return_status = FILE_SKIP;
+            goto ret;
         }
 
         if (confirm_overwrite)
         {
             return_status = query_replace (ctx, d, &src_stats, &dst_stats);
             if (return_status != FILE_CONT)
-            {
-                vfs_path_free (src_vpath);
-                vfs_path_free (dst_vpath);
-                return return_status;
-            }
+                goto ret;
         }
         /* Ok to overwrite */
     }
@@ -850,19 +843,13 @@ move_file_file (FileOpTotalContext * tctx, FileOpContext * ctx, const char *s, c
             return_status = make_symlink (ctx, s, d);
             if (return_status == FILE_CONT)
                 goto retry_src_remove;
-            else
-            {
-                vfs_path_free (src_vpath);
-                vfs_path_free (dst_vpath);
-                return return_status;
-            }
+            goto ret;
         }
 
         if (mc_rename (src_vpath, dst_vpath) == 0)
         {
-            vfs_path_free (src_vpath);
-            vfs_path_free (dst_vpath);
-            return progress_update_one (tctx, ctx, src_stats.st_size, TRUE);
+            return_status = progress_update_one (tctx, ctx, src_stats.st_size, TRUE);
+            goto ret;
         }
     }
 #if 0
@@ -885,10 +872,8 @@ move_file_file (FileOpTotalContext * tctx, FileOpContext * ctx, const char *s, c
             if (return_status == FILE_RETRY)
                 goto retry_rename;
         }
-        vfs_path_free (src_vpath);
-        vfs_path_free (dst_vpath);
 
-        return return_status;
+        goto ret;
     }
 #endif
 
@@ -898,11 +883,7 @@ move_file_file (FileOpTotalContext * tctx, FileOpContext * ctx, const char *s, c
     return_status = copy_file_file (tctx, ctx, s, d);
     tctx->ask_overwrite = old_ask_overwrite;
     if (return_status != FILE_CONT)
-    {
-        vfs_path_free (src_vpath);
-        vfs_path_free (dst_vpath);
-        return return_status;
-    }
+        goto ret;
 
     copy_done = TRUE;
 
@@ -911,12 +892,7 @@ move_file_file (FileOpTotalContext * tctx, FileOpContext * ctx, const char *s, c
 
     return_status = check_progress_buttons (ctx);
     if (return_status != FILE_CONT)
-    {
-        vfs_path_free (src_vpath);
-        vfs_path_free (dst_vpath);
-        return return_status;
-    }
-
+        goto ret;
     mc_refresh ();
 
   retry_src_remove:
@@ -927,15 +903,13 @@ move_file_file (FileOpTotalContext * tctx, FileOpContext * ctx, const char *s, c
             goto retry_src_remove;
         if (return_status == FILE_SKIPALL)
             ctx->skip_all = TRUE;
-
-        vfs_path_free (src_vpath);
-        vfs_path_free (dst_vpath);
-        return return_status;
+        goto ret;
     }
 
     if (!copy_done)
         return_status = progress_update_one (tctx, ctx, src_stats.st_size, TRUE);
 
+  ret:
     vfs_path_free (src_vpath);
     vfs_path_free (dst_vpath);
 
@@ -954,7 +928,9 @@ erase_file (FileOpTotalContext * tctx, FileOpContext * ctx, const vfs_path_t * v
 {
     int return_status;
     struct stat buf;
-    char *s = vfs_path_to_str (vpath);
+    char *s;
+
+    s = vfs_path_to_str (vpath);
     file_progress_show_deleting (ctx, s);
     if (check_progress_buttons (ctx) == FILE_ABORT)
     {
@@ -1117,29 +1093,27 @@ erase_dir_iff_empty (FileOpContext * ctx, const char *s)
 
     file_progress_show_deleting (ctx, s);
     if (check_progress_buttons (ctx) == FILE_ABORT)
-    {
         return FILE_ABORT;
-    }
+
     mc_refresh ();
+
     s_vpath = vfs_path_from_str (s);
 
-    if (1 != check_dir_is_empty (s_vpath))      /* not empty or error */
+    if (check_dir_is_empty (s_vpath) == 1)      /* not empty or error */
     {
-        vfs_path_free (s_vpath);
-        return FILE_CONT;
-    }
-
-    while (my_rmdir (s) != 0 && !ctx->skip_all)
-    {
-        error = file_error (_("Cannot remove directory \"%s\"\n%s"), s);
-        if (error == FILE_SKIPALL)
-            ctx->skip_all = TRUE;
-        if (error != FILE_RETRY)
+        while (my_rmdir (s) != 0 && !ctx->skip_all)
         {
-            vfs_path_free (s_vpath);
-            return error;
+            error = file_error (_("Cannot remove directory \"%s\"\n%s"), s);
+            if (error == FILE_SKIPALL)
+                ctx->skip_all = TRUE;
+            if (error != FILE_RETRY)
+            {
+                vfs_path_free (s_vpath);
+                return error;
+            }
         }
     }
+
     vfs_path_free (s_vpath);
     return FILE_CONT;
 }
@@ -1409,8 +1383,8 @@ FileProgressStatus
 copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
                 const char *src_path, const char *dst_path)
 {
-    uid_t src_uid = (uid_t) - 1;
-    gid_t src_gid = (gid_t) - 1;
+    uid_t src_uid = (uid_t) (-1);
+    gid_t src_gid = (gid_t) (-1);
 
     int src_desc, dest_desc = -1;
     int n_read, n_written;
@@ -1435,9 +1409,11 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
 
     file_progress_show_source (ctx, src_vpath);
     file_progress_show_target (ctx, dst_vpath);
+
     if (check_progress_buttons (ctx) == FILE_ABORT)
     {
-        return FILE_ABORT;
+        return_status = FILE_ABORT;
+        goto ret_fast;
     }
 
     mc_refresh ();
@@ -1458,6 +1434,7 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
             }
             goto ret_fast;
         }
+
         dst_exists = TRUE;
         break;
     }
@@ -1472,6 +1449,7 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
             if (return_status == FILE_SKIPALL)
                 ctx->skip_all = TRUE;
         }
+
         if (return_status != FILE_RETRY)
             goto ret_fast;
     }
@@ -1485,6 +1463,7 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
                                             src_path, dst_path);
             goto ret_fast;
         }
+
         /* Should we replace destination? */
         if (tctx->ask_overwrite)
         {
@@ -1601,6 +1580,7 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
         }
         goto ret;
     }
+
     src_mode = sb.st_mode;
     src_uid = sb.st_uid;
     src_gid = sb.st_gid;
@@ -2216,17 +2196,23 @@ move_dir_dir (FileOpTotalContext * tctx, FileOpContext * ctx, const char *s, con
 
     file_progress_show_source (ctx, src_vpath);
     file_progress_show_target (ctx, dst_vpath);
+
     if (check_progress_buttons (ctx) == FILE_ABORT)
-        return FILE_ABORT;
+    {
+        return_status = FILE_ABORT;
+        goto ret_fast;
+    }
 
     mc_refresh ();
 
     mc_stat (src_vpath, &sbuf);
 
     dstat_ok = (mc_stat (dst_vpath, &dbuf) == 0);
-
     if (dstat_ok && sbuf.st_dev == dbuf.st_dev && sbuf.st_ino == dbuf.st_ino)
-        return warn_same_file (_("\"%s\"\nand\n\"%s\"\nare the same directory"), s, d);
+    {
+        return_status = warn_same_file (_("\"%s\"\nand\n\"%s\"\nare the same directory"), s, d);
+        goto ret_fast;
+    }
 
     if (!dstat_ok)
         destdir = g_strdup (d); /* destination doesn't exist */
@@ -2265,11 +2251,10 @@ move_dir_dir (FileOpTotalContext * tctx, FileOpContext * ctx, const char *s, con
             if (return_status == FILE_RETRY)
                 goto retry_dst_stat;
         }
+
         g_free (destdir);
         vfs_path_free (destdir_vpath);
-        vfs_path_free (src_vpath);
-        vfs_path_free (dst_vpath);
-        return return_status;
+        goto ret_fast;
     }
 
   retry_rename:
@@ -2311,7 +2296,9 @@ move_dir_dir (FileOpTotalContext * tctx, FileOpContext * ctx, const char *s, con
         {
             if (S_ISDIR (erase_list->st_mode))
             {
-                char *src_path = vfs_path_to_str (erase_list->src_vpath);
+                char *src_path;
+
+                src_path = vfs_path_to_str (erase_list->src_vpath);
                 return_status = erase_dir_iff_empty (ctx, src_path);
                 g_free (src_path);
             }
@@ -2333,6 +2320,7 @@ move_dir_dir (FileOpTotalContext * tctx, FileOpContext * ctx, const char *s, con
         erase_list = erase_list->next;
         g_free (lp);
     }
+  ret_fast:
     vfs_path_free (src_vpath);
     vfs_path_free (dst_vpath);
     return return_status;
@@ -2347,7 +2335,10 @@ FileProgressStatus
 erase_dir (FileOpTotalContext * tctx, FileOpContext * ctx, const vfs_path_t * s_vpath)
 {
     FileProgressStatus error;
-    char *s = vfs_path_to_str (s_vpath);
+    char *s;
+
+    s = vfs_path_to_str (s_vpath);
+
     /*
        if (strcmp (s, "..") == 0)
        return FILE_SKIP;
@@ -2376,16 +2367,9 @@ erase_dir (FileOpTotalContext * tctx, FileOpContext * ctx, const vfs_path_t * s_
     {                           /* not empty */
         error = query_recursive (ctx, s);
         if (error == FILE_CONT)
-        {
             error = recursive_erase (tctx, ctx, s);
-            g_free (s);
-            return error;
-        }
-        else
-        {
-            g_free (s);
-            return error;
-        }
+        g_free (s);
+        return error;
     }
 
     while (my_rmdir (s) == -1 && !ctx->skip_all)

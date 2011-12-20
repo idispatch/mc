@@ -817,7 +817,9 @@ file_progress_show_target (FileOpContext * ctx, const vfs_path_t * s_vpath)
 
     if (s_vpath != NULL)
     {
-        char *s = vfs_path_to_str (s_vpath);
+        char *s;
+
+        s = vfs_path_to_str (s_vpath);
         label_set_text (ui->file_label[1], _("Target"));
         label_set_text (ui->file_string[1], truncFileStringSecure (ui, s));
         g_free (s);
