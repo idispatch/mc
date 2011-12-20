@@ -105,7 +105,8 @@ mcview_dialog_search (mcview_t * view)
                      (int *) &mcview_search_options.type),
         QUICK_INPUT (3, SEARCH_DLG_WIDTH, 3, SEARCH_DLG_HEIGHT,
                      INPUT_LAST_TEXT, SEARCH_DLG_WIDTH - 6, FALSE, MC_HISTORY_SHARED_SEARCH, &exp,
-                     INPUT_COMPLETE_DEFAULT),
+                     INPUT_COMPLETE_HOSTNAMES | INPUT_COMPLETE_VARIABLES | INPUT_COMPLETE_USERNAMES
+                     | INPUT_COMPLETE_FILENAMES | INPUT_COMPLETE_FILES_ESC),
         QUICK_LABEL (3, SEARCH_DLG_WIDTH, 2, SEARCH_DLG_HEIGHT, N_("Enter search string:")),
         QUICK_END
     };

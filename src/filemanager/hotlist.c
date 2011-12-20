@@ -1029,6 +1029,7 @@ add_new_entry_input (const char *header, const char *text1, const char *text2,
         /* 1 */ QUICK_BUTTON (30, 80, RELATIVE_Y_BUTTONS, 0, N_("&Insert"), B_INSERT, NULL),
         /* 2 */ QUICK_BUTTON (10, 80, RELATIVE_Y_BUTTONS, 0, N_("&Append"), B_APPEND, NULL),
         /* 3 */ QUICK_INPUT (4, 80, RELATIVE_Y_INPUT_PTH, 0, *r2, 58, FALSE, "input-pth", r2,
+                             INPUT_COMPLETE_FILENAMES | INPUT_COMPLETE_FILES_ESC |
                              INPUT_COMPLETE_DEFAULT | INPUT_COMPLETE_CD),
         /* 4 */ QUICK_LABEL (4, 80, 3, 0, text2),
         /* 5 */ QUICK_INPUT (4, 80, 3, 0, *r1, 58, FALSE, "input-lbl", r1, INPUT_COMPLETE_DEFAULT),

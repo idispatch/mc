@@ -36,11 +36,7 @@ typedef enum
     INPUT_COMPLETE_SHELL_ESC = 1 << 6,
     INPUT_COMPLETE_FILES_ESC = 1 << 7,
 
-    INPUT_COMPLETE_DEFAULT =
-        INPUT_COMPLETE_HOSTNAMES | INPUT_COMPLETE_VARIABLES | INPUT_COMPLETE_USERNAMES,
-
-    INPUT_COMPLETE_DEFAULT_AND_FILES =
-        INPUT_COMPLETE_DEFAULT | INPUT_COMPLETE_FILENAMES | INPUT_COMPLETE_FILES_ESC
+    INPUT_COMPLETE_DEFAULT = 0
 } input_complete_t;
 
 /*** structures declarations (and typedefs of structures)*****************************************/

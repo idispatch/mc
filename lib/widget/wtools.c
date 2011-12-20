@@ -185,7 +185,8 @@ fg_input_dialog_help (const char *header, const char *text, const char *help,
         /* 0 */ QUICK_BUTTON (6, 64, 1, 0, N_("&Cancel"), B_CANCEL, NULL),
         /* 1 */ QUICK_BUTTON (3, 64, 1, 0, N_("&OK"), B_ENTER, NULL),
         /* 2 */ QUICK_INPUT (3, 64, 0, 0, def_text, 58, FALSE, NULL, &my_str,
-                             INPUT_COMPLETE_DEFAULT),
+                             INPUT_COMPLETE_HOSTNAMES | INPUT_COMPLETE_VARIABLES |
+                             INPUT_COMPLETE_USERNAMES),
         /* 3 */ QUICK_LABEL (3, 64, 2, 0, ""),
         QUICK_END
     };

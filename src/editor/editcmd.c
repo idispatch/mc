@@ -417,7 +417,9 @@ edit_get_save_file_as (WEdit * edit)
         QUICK_RADIO (5, DLG_WIDTH, DLG_HEIGHT - 8, DLG_HEIGHT, LB_NAMES, lb_names, (int *) &cur_lb),
         QUICK_LABEL (3, DLG_WIDTH, DLG_HEIGHT - 9, DLG_HEIGHT, N_("Change line breaks to:")),
         QUICK_INPUT (3, DLG_WIDTH, DLG_HEIGHT - 11, DLG_HEIGHT, filename, DLG_WIDTH - 6, FALSE,
-                     "save-as", &filename, INPUT_COMPLETE_DEFAULT_AND_FILES),
+                     "save-as", &filename, INPUT_COMPLETE_HOSTNAMES | INPUT_COMPLETE_VARIABLES |
+                     INPUT_COMPLETE_USERNAMES | INPUT_COMPLETE_FILENAMES |
+                     INPUT_COMPLETE_FILES_ESC),
         QUICK_LABEL (3, DLG_WIDTH, DLG_HEIGHT - 12, DLG_HEIGHT, N_("Enter file name:")),
         QUICK_END
     };

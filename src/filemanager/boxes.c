@@ -943,7 +943,7 @@ configure_vfs (void)
                                  &ftpfs_use_passive_connections),
         /*  4 */ QUICK_CHECKBOX (4, VFSX, 10, VFSY, N_("&Use ~/.netrc"), &ftpfs_use_netrc),
         /*  5 */ QUICK_INPUT (4, VFSX, 9, VFSY, ftpfs_proxy_host, 48, FALSE, "input-ftp-proxy",
-                              &ret_ftp_proxy, INPUT_COMPLETE_DEFAULT),
+                              &ret_ftp_proxy, INPUT_COMPLETE_HOSTNAMES),
         /*  6 */ QUICK_CHECKBOX (4, VFSX, 8, VFSY, N_("&Always use ftp proxy"),
                                  &ftpfs_always_use_proxy),
         /*  7 */ QUICK_LABEL (49, VFSX, 7, VFSY, N_("sec")),
@@ -1026,7 +1026,9 @@ cd_dialog (void)
 
         QuickWidget quick_widgets[] = {
             /* 0 */ QUICK_INPUT (4 + len, xlen, 2, ylen, "", xlen - 7 - len, FALSE, "input",
-                                 &my_str, INPUT_COMPLETE_DEFAULT | INPUT_COMPLETE_CD),
+                                 &my_str,
+                                 INPUT_COMPLETE_FILENAMES | INPUT_COMPLETE_FILES_ESC |
+                                 INPUT_COMPLETE_CD),
             /* 1 */ QUICK_LABEL (3, xlen, 2, ylen, label),
             QUICK_END
         };
@@ -1049,10 +1051,10 @@ symlink_dialog (const char *existing, const char *new, char **ret_existing, char
         /* 0 */ QUICK_BUTTON (50, 80, 6, 8, N_("&Cancel"), B_CANCEL, NULL),
         /* 1 */ QUICK_BUTTON (16, 80, 6, 8, N_("&OK"), B_ENTER, NULL),
         /* 2 */ QUICK_INPUT (4, 80, 5, 8, new, 58, FALSE, "input-1", ret_new,
-                             INPUT_COMPLETE_DEFAULT_AND_FILES),
+                             INPUT_COMPLETE_FILENAMES | INPUT_COMPLETE_FILES_ESC),
         /* 3 */ QUICK_LABEL (4, 80, 4, 8, N_("Symbolic link filename:")),
         /* 4 */ QUICK_INPUT (4, 80, 3, 8, existing, 58, FALSE, "input-2", ret_existing,
-                             INPUT_COMPLETE_DEFAULT_AND_FILES),
+                             INPUT_COMPLETE_FILENAMES | INPUT_COMPLETE_FILES_ESC),
         /* 5 */ QUICK_LABEL (4, 80, 2, 8,
                              N_("Existing filename (filename symlink will point to):")),
         QUICK_END
