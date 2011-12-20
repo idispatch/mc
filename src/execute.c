@@ -444,7 +444,7 @@ execute_with_vfs_arg (const char *command, const vfs_path_t * filename_vpath)
     vfs_path_t *localcopy_vpath;
 
     /* Simplest case, this file is local */
-    if (filename_vpath != NULL || vfs_file_is_local (filename_vpath))
+    if (filename_vpath == NULL || vfs_file_is_local (filename_vpath))
     {
         do_execute (command, vfs_path_get_last_path_str (filename_vpath), EXECUTE_INTERNAL);
         return;
@@ -457,7 +457,9 @@ execute_with_vfs_arg (const char *command, const vfs_path_t * filename_vpath)
     localcopy_vpath = mc_getlocalcopy (filename_vpath);
     if (localcopy_vpath == NULL)
     {
-        char *filename = vfs_path_to_str (filename_vpath);
+        char *filename;
+
+        filename = vfs_path_to_str (filename_vpath);
         message (D_ERROR, MSG_ERROR, _("Cannot fetch a local copy of %s"), filename);
         g_free (filename);
         return;

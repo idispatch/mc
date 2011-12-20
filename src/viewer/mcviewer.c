@@ -245,7 +245,9 @@ mcview_viewer (const char *command, const vfs_path_t * file_vpath, int start_lin
     view_dlg->get_title = mcview_get_title;
 
     {
-        char *file = vfs_path_to_str (file_vpath);
+        char *file;
+
+        file = vfs_path_to_str (file_vpath);
         succeeded = mcview_load (lc_mcview, command, file, start_line);
         g_free (file);
     }

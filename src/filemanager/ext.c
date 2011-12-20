@@ -633,7 +633,7 @@ int
 regex_command (const vfs_path_t * filename_vpath, const char *action, int *move_dir)
 {
     char *filename, *p, *q, *r, c;
-    int file_len = vfs_path_len (filename_vpath);
+    size_t file_len;
     int found = 0;
     int error_flag = 0;
     int ret = 0;
@@ -723,6 +723,8 @@ regex_command (const vfs_path_t * filename_vpath, const char *action, int *move_
     include_target = NULL;
     include_target_len = 0;
     filename = vfs_path_to_str (filename_vpath);
+    file_len = vfs_path_len (filename_vpath);
+
     for (p = data; *p; p++)
     {
         for (q = p; *q == ' ' || *q == '\t'; q++);

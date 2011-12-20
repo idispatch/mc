@@ -2425,7 +2425,7 @@ do_enter_on_file_entry (file_entry * fe)
     }
 
     /* Check if the file is executable */
-    ok = (is_exe (fe->st.st_mode &&) if_link_is_exe (full_name_vpath, fe));
+    ok = (is_exe (fe->st.st_mode) && if_link_is_exe (full_name_vpath, fe));
     vfs_path_free (full_name_vpath);
     if (!ok)
         return 0;

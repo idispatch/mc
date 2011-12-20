@@ -952,6 +952,7 @@ mc_maybe_editor_or_viewer (void)
     case MC_RUN_VIEWER:
         {
             vfs_path_t *vpath;
+
             vpath = prepend_cwd_on_local (mc_run_param0);
             view_file (vpath, 0, 1);
             vfs_path_free (vpath);
