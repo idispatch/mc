@@ -543,16 +543,16 @@ vfs_path_tokens_add_class_info (vfs_path_element_t * element, GString * ret_toke
 static char *
 vfs_path_strip_home (const char *dir)
 {
-    size_t len;
     const char *home_dir = mc_config_get_home_dir ();
 
     if (home_dir != NULL)
     {
+        size_t len;
+
         len = strlen (home_dir);
+
         if (strncmp (dir, home_dir, len) == 0 && (dir[len] == PATH_SEP || dir[len] == '\0'))
-        {
             return g_strdup_printf ("~%s", dir + len);
-        }
     }
 
     return g_strdup (dir);
@@ -575,9 +575,10 @@ vfs_path_strip_home (const char *dir)
 
 #define vfs_append_from_path(appendfrom) \
 { \
-    if ((flags & VPF_STRIP_HOME) && element_index == 0 && (element->class->flags & VFSF_LOCAL)) \
+    if ((flags & VPF_STRIP_HOME) && element_index == 0 && (element->class->flags & VFSF_LOCAL) != 0) \
     { \
-        char *stripped_home_str = vfs_path_strip_home (appendfrom); \
+        char *stripped_home_str; \
+        stripped_home_str = vfs_path_strip_home (appendfrom); \
         g_string_append (buffer, stripped_home_str); \
         g_free (stripped_home_str); \
     } \
@@ -631,7 +632,7 @@ vfs_path_to_str_flags (const vfs_path_t * vpath, int elements_count, vfs_path_fl
             g_free (url_str);
         }
 
-        if (!(flags & VPF_RECODE) && vfs_path_element_need_cleanup_converter (element))
+        if ((flags & VPF_RECODE) == 0 && vfs_path_element_need_cleanup_converter (element))
         {
             if (buffer->str[buffer->len - 1] != PATH_SEP)
                 g_string_append (buffer, PATH_SEP_STR);
