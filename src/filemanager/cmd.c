@@ -160,6 +160,7 @@ do_view_cmd (gboolean normal)
     if (S_ISDIR (selection (current_panel)->st.st_mode) || link_isdir (selection (current_panel)))
     {
         vfs_path_t *fname_vpath;
+
         if (confirm_view_dir && (current_panel->marked || current_panel->dirs_marked))
         {
             if (query_dialog
@@ -564,12 +565,15 @@ nice_cd (const char *text, const char *xtext, const char *help,
     if (*cd_path != PATH_SEP)
     {
         char *tmp = cd_path;
+
         cd_path = g_strconcat (PATH_SEP_STR, tmp, (char *) NULL);
         g_free (tmp);
     }
 
     {
-        vfs_path_t *cd_vpath = vfs_path_from_str (cd_path);
+        vfs_path_t *cd_vpath;
+
+        cd_vpath = vfs_path_from_str (cd_path);
         if (!do_panel_cd (MENU_PANEL, cd_vpath, cd_parse_command))
             message (D_ERROR, MSG_ERROR, _("Cannot chdir to \"%s\""), cd_path);
         vfs_path_free (cd_vpath);

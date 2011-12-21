@@ -263,11 +263,15 @@ do_cd (const vfs_path_t * new_dir_vpath, enum cd_enum exact)
 {
     gboolean res;
     const vfs_path_t *_new_dir_vpath = new_dir_vpath;
-    const char *new_dir_str = vfs_path_get_by_index (new_dir_vpath, 0)->path;
 
-    if (current_panel->is_panelized && new_dir_str[0] == '.' && new_dir_str[1] == '.'
-        && new_dir_str[2] == 0)
-        _new_dir_vpath = panelized_panel.root_vpath;
+    if (current_panel->is_panelized)
+    {
+        const char *new_dir_str;
+
+        new_dir_str = vfs_path_get_by_index (new_dir_vpath, 0)->path;
+        if (new_dir_str[0] == '.' && new_dir_str[1] == '.'  && new_dir_str[2] == '\0')
+            _new_dir_vpath = panelized_panel.root_vpath;
+    }
 
     res = do_panel_cd (current_panel, _new_dir_vpath, exact);
 

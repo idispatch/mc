@@ -1752,7 +1752,9 @@ find_file (void)
         {
             if (dirname != NULL)
             {
-                vfs_path_t *dirname_vpath = vfs_path_from_str (dirname);
+                vfs_path_t *dirname_vpath;
+
+                dirname_vpath = vfs_path_from_str (dirname);
                 do_cd (dirname_vpath, cd_exact);
                 vfs_path_free (dirname_vpath);
                 if (filename != NULL)
@@ -1762,7 +1764,9 @@ find_file (void)
             }
             else if (filename != NULL)
             {
-                vfs_path_t *filename_vpath = vfs_path_from_str (filename);
+                vfs_path_t *filename_vpath;
+
+                filename_vpath = vfs_path_from_str (filename);
                 do_cd (filename_vpath, cd_exact);
                 vfs_path_free (filename_vpath);
             }

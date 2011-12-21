@@ -444,7 +444,9 @@ do_panelize_cd (struct WPanel *panel)
         }
         else
         {
-            vfs_path_t *tmp_vpath =
+            vfs_path_t *tmp_vpath;
+
+            tmp_vpath =
                 vfs_path_append_new (panelized_panel.root_vpath, panelized_panel.list.list[i].fname,
                                      NULL);
             list->list[i].fname = vfs_path_to_str (tmp_vpath);

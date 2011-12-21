@@ -153,7 +153,9 @@ treebox_cmd (void)
     sel_dir = tree_box (selection (current_panel)->fname);
     if (sel_dir != NULL)
     {
-        vfs_path_t *sel_vdir = vfs_path_from_str (sel_dir);
+        vfs_path_t *sel_vdir;
+
+        sel_vdir = vfs_path_from_str (sel_dir);
         do_cd (sel_vdir, cd_exact);
         vfs_path_free (sel_vdir);
         g_free (sel_dir);

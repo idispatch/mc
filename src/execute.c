@@ -114,7 +114,9 @@ edition_pre_exec (void)
 static void
 do_possible_cd (const char *new_dir)
 {
-    vfs_path_t *new_dir_vpath = vfs_path_from_str (new_dir);
+    vfs_path_t *new_dir_vpath;
+
+    new_dir_vpath = vfs_path_from_str (new_dir);
     if (!do_cd (new_dir_vpath, cd_exact))
         message (D_ERROR, _("Warning"),
                  _("The Commander can't change to the directory that\n"
