@@ -1092,10 +1092,15 @@ correct_key_code (int code)
     /* Convert Shift+Tab and Ctrl+Tab to Back Tab
      * only if modifiers directly from X11
      */
-    if (x11_window != 0 && (c == '\t') && (mod & (KEY_M_SHIFT | KEY_M_CTRL)))
+#ifdef HAVE_TEXTMODE_X11_SUPPORT
+    if (x11_window != 0)
+#endif /* HAVE_TEXTMODE_X11_SUPPORT */
     {
-        c = KEY_BTAB;
-        mod = 0;
+        if ((c == '\t') && (mod & (KEY_M_SHIFT | KEY_M_CTRL)))
+        {
+            c = KEY_BTAB;
+            mod = 0;
+        }
     }
 
     /* F0 is the same as F10 for out purposes */
