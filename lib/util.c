@@ -326,9 +326,12 @@ fake_name_quote (const char *s, int quote_percent)
 const char *
 path_trunc (const char *path, size_t trunc_len)
 {
+    vfs_path_t *vpath;
+    char *secure_path;
     const char *ret;
-    vfs_path_t *vpath = vfs_path_from_str (path);
-    char *secure_path = vfs_path_to_str_flags (vpath, 0, VPF_STRIP_PASSWORD);
+
+    vpath = vfs_path_from_str (path);
+    secure_path = vfs_path_to_str_flags (vpath, 0, VPF_STRIP_PASSWORD);
     vfs_path_free (vpath);
 
     ret = str_trunc (secure_path, trunc_len);

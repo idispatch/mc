@@ -4408,9 +4408,12 @@ update_panels (panel_update_flags_t flags, const char *current_file)
 void
 directory_history_add (struct WPanel *panel, const char *dir)
 {
-    vfs_path_t *vpath = vfs_path_from_str (dir);
-    char *tmp = vfs_path_to_str_flags (vpath, 0, VPF_STRIP_PASSWORD);
+    vfs_path_t *vpath;
+    char *tmp;
 
+    vpath = vfs_path_from_str (dir);
+    tmp = vfs_path_to_str_flags (vpath, 0, VPF_STRIP_PASSWORD);
+    vfs_path_free (vpath);
     panel->dir_history = list_append_unique (panel->dir_history, tmp);
 }
 

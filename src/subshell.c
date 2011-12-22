@@ -1250,7 +1250,9 @@ do_subshell_chdir (const vfs_path_t * vpath, gboolean update_prompt, gboolean re
 
         if (bPathNotEq && strcmp (pcwd, ".") != 0)
         {
-            char *cwd = vfs_path_to_str_flags (current_panel->cwd_vpath, 0, VPF_STRIP_PASSWORD);
+            char *cwd;
+
+            cwd = vfs_path_to_str_flags (current_panel->cwd_vpath, 0, VPF_STRIP_PASSWORD);
             vfs_print_message (_("Warning: Cannot change to %s.\n"), cwd);
             g_free (cwd);
         }

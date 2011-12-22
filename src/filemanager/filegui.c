@@ -347,15 +347,10 @@ overwrite_query_dialog (FileOpContext * ctx, enum OperationMode mode)
     char buffer[BUF_SMALL];
     const char *title;
     int stripped_name_len;
-    vfs_path_t *stripped_vpath = vfs_path_from_str (ui->replace_filename);
+    vfs_path_t *stripped_vpath;
     const char *stripped_name;
     char *stripped_name_orig;
     int result;
-
-    stripped_name = stripped_name_orig =
-        vfs_path_to_str_flags (stripped_vpath, 0, VPF_STRIP_HOME | VPF_STRIP_PASSWORD);
-
-    vfs_path_free (stripped_vpath);
 
     widgets_len = g_new0 (int, num);
 
@@ -364,6 +359,10 @@ overwrite_query_dialog (FileOpContext * ctx, enum OperationMode mode)
     else
         title = _("Background process: File exists");
 
+    stripped_vpath = vfs_path_from_str (ui->replace_filename);
+    stripped_name = stripped_name_orig =
+        vfs_path_to_str_flags (stripped_vpath, 0, VPF_STRIP_HOME | VPF_STRIP_PASSWORD);
+    vfs_path_free (stripped_vpath);
     stripped_name_len = str_term_width1 (stripped_name);
 
     {
@@ -1043,7 +1042,9 @@ file_mask_dialog (FileOpContext * ctx, FileOperation operation,
 
     /* filter out a possible password from def_text */
     {
-        vfs_path_t *vpath = vfs_path_from_str (def_text);
+        vfs_path_t *vpath;
+
+        vpath = vfs_path_from_str (def_text);
         tmp = vfs_path_to_str_flags (vpath, 0, VPF_STRIP_PASSWORD);
         vfs_path_free (vpath);
     }

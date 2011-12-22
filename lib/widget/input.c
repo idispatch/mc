@@ -242,7 +242,9 @@ push_history (WInput * in, const char *text)
         for (i = 0; i < ELEMENTS; i++)
             if (strcmp (p, password_input_fields[i]) == 0)
             {
-                vfs_path_t *vpath = vfs_path_from_str (t);
+                vfs_path_t *vpath;
+
+                vpath = vfs_path_from_str (t);
                 g_free (t);
                 t = vfs_path_to_str_flags (vpath, 0, VPF_STRIP_PASSWORD);
                 vfs_path_free (vpath);

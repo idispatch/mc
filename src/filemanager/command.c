@@ -378,12 +378,14 @@ do_cd_command (char *orig_cmd)
     }
     else if (!examine_cd (&cmd[operand_pos]))
     {
-        vfs_path_t *vpath = vfs_path_from_str (&cmd[operand_pos]);
-        char *d = vfs_path_to_str_flags (vpath, 0, VPF_STRIP_PASSWORD);
+        vfs_path_t *vpath;
+        char *d;
+
+        vpath = vfs_path_from_str (&cmd[operand_pos]);
+        d = vfs_path_to_str_flags (vpath, 0, VPF_STRIP_PASSWORD);
         vfs_path_free (vpath);
         message (D_ERROR, MSG_ERROR, _("Cannot chdir to \"%s\"\n%s"), d, unix_error_string (errno));
         g_free (d);
-        return;
     }
 }
 

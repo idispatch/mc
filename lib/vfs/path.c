@@ -634,7 +634,7 @@ vfs_path_to_str_flags (const vfs_path_t * vpath, int elements_count, vfs_path_fl
 
         if ((flags & VPF_RECODE) == 0 && vfs_path_element_need_cleanup_converter (element))
         {
-            if (!(flags & VPF_HIDE_CHARSET))
+            if ((flags & VPF_HIDE_CHARSET) == 0)
             {
                 if (buffer->str[buffer->len - 1] != PATH_SEP)
                     g_string_append (buffer, PATH_SEP_STR);
