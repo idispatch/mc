@@ -2600,7 +2600,6 @@ panel_operate (void *source_panel, FileOperation operation, gboolean force_singl
     FileOpTotalContext *tctx;
     vfs_path_t *tmp_vpath;
 
-
     gboolean do_bg = FALSE;     /* do background operation? */
 
     static gboolean i18n_flag = FALSE;

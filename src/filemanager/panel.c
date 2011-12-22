@@ -3424,7 +3424,9 @@ update_one_panel_widget (WPanel * panel, panel_update_flags_t flags, const char 
 
     if ((flags & UP_RELOAD) != 0)
     {
-        vfs_path_t *tmp_vpath = vfs_path_from_str (panel->cwd);
+        vfs_path_t *tmp_vpath;
+
+        tmp_vpath = vfs_path_from_str (panel->cwd);
         panel->is_panelized = FALSE;
         mc_setctl (tmp_vpath, VFS_SETCTL_FLUSH, 0);
         vfs_path_free (tmp_vpath);
