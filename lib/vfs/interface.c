@@ -265,17 +265,19 @@ mc_symlink (const vfs_path_t *vpath1, const vfs_path_t *vpath2)
 
     if (vpath1 != NULL)
     {
-        vfs_path_element_t *path_element = vfs_path_get_by_index (vpath2, -1);
+        vfs_path_element_t *path_element;
+
+        path_element = vfs_path_get_by_index (vpath2, -1);
         if (vfs_path_element_valid (path_element))
         {
             result =
-                path_element->class->symlink !=
-                NULL ? path_element->class->symlink (vpath1, vpath2) : -1;
+                path_element->class->symlink != NULL ?
+                path_element->class->symlink (vpath1, vpath2) : -1;
 
             if (result == -1)
                 errno =
-                    path_element->class->symlink !=
-                    NULL ? vfs_ferrno (path_element->class) : E_NOTSUPP;
+                    path_element->class->symlink != NULL ?
+                    vfs_ferrno (path_element->class) : E_NOTSUPP;
         }
     }
     return result;

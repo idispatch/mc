@@ -482,7 +482,7 @@ do_link (link_type_t link_type, const char *fname)
 
         dest_vpath = vfs_path_from_str_flags (dest, VPF_NO_CANON);
         src_vpath = vfs_path_from_str (src);
-        if (-1 == mc_symlink (dest_vpath, src_vpath))
+        if (mc_symlink (dest_vpath, src_vpath) == -1)
             message (D_ERROR, MSG_ERROR, _("symlink: %s"), unix_error_string (errno));
         vfs_path_free (src_vpath);
     }
@@ -1354,8 +1354,10 @@ edit_symlink_cmd (void)
                     }
                     else
                     {
-                        vfs_path_t *dest_vpath = vfs_path_from_str_flags (dest, VPF_NO_CANON);
-                        if (-1 == mc_symlink (dest_vpath, p_vpath))
+                        vfs_path_t *dest_vpath;
+
+                        dest_vpath = vfs_path_from_str_flags (dest, VPF_NO_CANON);
+                        if (mc_symlink (dest_vpath, p_vpath) == -1)
                             message (D_ERROR, MSG_ERROR, _("edit symlink: %s"),
                                      unix_error_string (errno));
                         vfs_path_free(dest_vpath);

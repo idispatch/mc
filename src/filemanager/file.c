@@ -370,12 +370,13 @@ make_symlink (FileOpContext * ctx, const char *src_path, const char *dst_path)
     int len;
     FileProgressStatus return_status;
     struct stat sb;
+    vfs_path_t *src_vpath;
+    vfs_path_t *dst_vpath;
     gboolean dst_is_symlink;
-    vfs_path_t *link_target_vpath;
+    vfs_path_t *link_target_vpath = NULL;
 
-    vfs_path_t *src_vpath = vfs_path_from_str (src_path);
-    vfs_path_t *dst_vpath = vfs_path_from_str (dst_path);
-
+    src_vpath = vfs_path_from_str (src_path);
+    dst_vpath = vfs_path_from_str (dst_path);
     dst_is_symlink = (mc_lstat (dst_vpath, &sb) == 0) && S_ISLNK (sb.st_mode);
 
   retry_src_readlink:
@@ -392,7 +393,7 @@ make_symlink (FileOpContext * ctx, const char *src_path, const char *dst_path)
             if (return_status == FILE_RETRY)
                 goto retry_src_readlink;
         }
-        return return_status;
+        goto ret;
     }
     link_target[len] = 0;
 
@@ -447,10 +448,8 @@ make_symlink (FileOpContext * ctx, const char *src_path, const char *dst_path)
     if (mc_symlink (link_target_vpath, dst_vpath) == 0)
     {
         /* Success */
-        vfs_path_free (src_vpath);
-        vfs_path_free (dst_vpath);
-        vfs_path_free (link_target_vpath);
-        return FILE_CONT;
+        return_status = FILE_CONT;
+        goto ret;
     }
     /*
      * if dst_exists, it is obvious that this had failed.
@@ -462,11 +461,8 @@ make_symlink (FileOpContext * ctx, const char *src_path, const char *dst_path)
             if (mc_symlink (link_target_vpath, dst_vpath) == 0)
             {
                 /* Success */
-                vfs_path_free (src_vpath);
-                vfs_path_free (dst_vpath);
-                vfs_path_free (link_target_vpath);
-
-                return FILE_CONT;
+                return_status = FILE_CONT;
+                goto ret;
             }
     }
     if (ctx->skip_all)
@@ -479,6 +475,8 @@ make_symlink (FileOpContext * ctx, const char *src_path, const char *dst_path)
         if (return_status == FILE_RETRY)
             goto retry_dst_symlink;
     }
+
+ ret:
     vfs_path_free (src_vpath);
     vfs_path_free (dst_vpath);
     vfs_path_free (link_target_vpath);
