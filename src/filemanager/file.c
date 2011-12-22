@@ -449,7 +449,7 @@ make_symlink (FileOpContext * ctx, const char *src_path, const char *dst_path)
      */
     if (dst_is_symlink)
     {
-        if (!mc_unlink (dst_vpath))
+        if (mc_unlink (dst_vpath) == 0)
             if (mc_symlink (link_target, dst_path) == 0)
             {
                 /* Success */
@@ -1430,7 +1430,7 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
     dest_status_t dst_status = DEST_NONE;
     int open_flags;
     gboolean is_first_time = TRUE;
-    vfs_path_t *src_vpath, *dst_vpath;
+    vfs_path_t *src_vpath = NULL, *dst_vpath = NULL;
 
     /* FIXME: We should not be using global variables! */
     ctx->do_reget = 0;
@@ -1458,7 +1458,7 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
                 if (return_status == FILE_RETRY)
                     continue;
             }
-            return return_status;
+            goto ret_fast;
         }
         dst_exists = TRUE;
         break;
@@ -1476,11 +1476,7 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
                 ctx->skip_all = TRUE;
         }
         if (return_status != FILE_RETRY)
-        {
-            vfs_path_free (src_vpath);
-            vfs_path_free (dst_vpath);
-            return return_status;
-        }
+            goto ret_fast;
     }
 
     if (dst_exists)
@@ -1488,9 +1484,9 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
         /* Destination already exists */
         if (sb.st_dev == sb2.st_dev && sb.st_ino == sb2.st_ino)
         {
-            vfs_path_free (src_vpath);
-            vfs_path_free (dst_vpath);
-            return warn_same_file (_("\"%s\"\nand\n\"%s\"\nare the same file"), src_path, dst_path);
+            return_status = warn_same_file (_("\"%s\"\nand\n\"%s\"\nare the same file"),
+                                            src_path, dst_path);
+            goto ret_fast;
         }
         /* Should we replace destination? */
         if (tctx->ask_overwrite)
@@ -1498,11 +1494,7 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
             ctx->do_reget = 0;
             return_status = query_replace (ctx, dst_path, &sb, &sb2);
             if (return_status != FILE_CONT)
-            {
-                vfs_path_free (src_vpath);
-                vfs_path_free (dst_vpath);
-                return return_status;
-            }
+                goto ret_fast;
         }
     }
 
@@ -1512,17 +1504,14 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
         if (!ctx->follow_links && sb.st_nlink > 1 && check_hardlinks (src_path, dst_path, &sb))
         {
             /* We have made a hardlink - no more processing is necessary */
-            vfs_path_free (src_vpath);
-            vfs_path_free (dst_vpath);
-            return FILE_CONT;
+            return_status = FILE_CONT;
+            goto ret_fast;
         }
 
         if (S_ISLNK (sb.st_mode))
         {
-            vfs_path_free (src_vpath);
-            vfs_path_free (dst_vpath);
-
-            return make_symlink (ctx, src_path, dst_path);
+            return_status = make_symlink (ctx, src_path, dst_path);
+            goto ret_fast;
         }
 
         if (S_ISCHR (sb.st_mode) || S_ISBLK (sb.st_mode) ||
@@ -1536,9 +1525,7 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
                     continue;
                 if (return_status == FILE_SKIPALL)
                     ctx->skip_all = TRUE;
-                vfs_path_free (src_vpath);
-                vfs_path_free (dst_vpath);
-                return return_status;
+                goto ret_fast;
             }
             /* Success */
 
@@ -1552,9 +1539,8 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
                     ctx->skip_all = TRUE;
                 if (temp_status != FILE_RETRY)
                 {
-                    vfs_path_free (src_vpath);
-                    vfs_path_free (dst_vpath);
-                    return temp_status;
+                    return_status = temp_status;
+                    goto ret_fast;
                 }
             }
 
@@ -1568,13 +1554,13 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
                     ctx->skip_all = TRUE;
                 if (temp_status != FILE_RETRY)
                 {
-                    vfs_path_free (src_vpath);
-                    vfs_path_free (dst_vpath);
-                    return temp_status;
+                    return_status = temp_status;
+                    goto ret_fast;
                 }
             }
 
-            return FILE_CONT;
+            return_status = FILE_CONT;
+            goto ret_fast;
         }
     }
 
@@ -1590,9 +1576,7 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
         if (return_status == FILE_SKIP)
             break;
         ctx->do_append = 0;
-        vfs_path_free (src_vpath);
-        vfs_path_free (dst_vpath);
-        return return_status;
+        goto ret_fast;
     }
 
     if (ctx->do_reget != 0)
@@ -1852,6 +1836,7 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
     {
         /* Remove short file */
         int result;
+
         result = query_dialog (Q_ ("DialogTitle|Copy"),
                                _("Incomplete file was retrieved. Keep it?"),
                                D_ERROR, 2, _("&Delete"), _("&Keep"));
@@ -1912,6 +1897,7 @@ copy_file_file (FileOpTotalContext * tctx, FileOpContext * ctx,
     if (return_status == FILE_CONT)
         return_status = progress_update_one (tctx, ctx, file_size, tctx->is_toplevel_file);
 
+  ret_fast:
     vfs_path_free (src_vpath);
     vfs_path_free (dst_vpath);
     return return_status;

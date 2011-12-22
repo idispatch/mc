@@ -242,8 +242,9 @@ chown_done (void)
 static void
 do_chown (uid_t u, gid_t g)
 {
-    vfs_path_t *vpath = vfs_path_from_str (current_panel->dir.list[current_file].fname);
+    vfs_path_t *vpath;
 
+    vpath = vfs_path_from_str (current_panel->dir.list[current_file].fname);
     if (mc_chown (vpath, u, g) == -1)
         message (D_ERROR, MSG_ERROR, _("Cannot chown \"%s\"\n%s"),
                  current_panel->dir.list[current_file].fname, unix_error_string (errno));
@@ -288,6 +289,7 @@ chown_cmd (void)
     do
     {                           /* do while any files remaining */
         vfs_path_t *vpath;
+
         ch_dlg = init_chown ();
         new_user = new_group = -1;
 
@@ -369,7 +371,9 @@ chown_cmd (void)
                     new_user = user->pw_uid;
                 if (ch_dlg->ret_value == B_ENTER)
                 {
-                    vfs_path_t *fname_vpath = vfs_path_from_str (fname);
+                    vfs_path_t *fname_vpath;
+
+                    fname_vpath = vfs_path_from_str (fname);
                     need_update = 1;
                     if (mc_chown (fname_vpath, new_user, new_group) == -1)
                         message (D_ERROR, MSG_ERROR, _("Cannot chown \"%s\"\n%s"),

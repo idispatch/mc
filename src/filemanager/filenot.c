@@ -72,9 +72,10 @@ my_mkdir_rec (char *s, mode_t mode)
 {
     char *p, *q;
     int result;
-    vfs_path_t *s_vpath = vfs_path_from_str (s);
+    vfs_path_t *s_vpath;
 
-    if (!mc_mkdir (s_vpath, mode))
+    s_vpath = vfs_path_from_str (s);
+    if (mc_mkdir (s_vpath, mode) == 0)
     {
         vfs_path_free (s_vpath);
         return 0;
@@ -103,7 +104,9 @@ my_mkdir_rec (char *s, mode_t mode)
 
     p = concat_dir_and_file (s, "..");
     {
-        vfs_path_t *vpath = vfs_path_from_str (p);
+        vfs_path_t *vpath;
+
+        vpath = vfs_path_from_str (p);
         q = vfs_path_to_str (vpath);
         vfs_path_free (vpath);
     }
@@ -127,13 +130,15 @@ my_mkdir (const char *s, mode_t mode)
 {
     int result;
     char *my_s;
-    vfs_path_t *s_vpath = vfs_path_from_str (s);
+    vfs_path_t *s_vpath;
 
+    s_vpath = vfs_path_from_str (s);
     result = mc_mkdir (s_vpath, mode);
 
-    if (result)
+    if (result != 0)
     {
         char *p;
+
         p = vfs_path_to_str (s_vpath);
         result = my_mkdir_rec (p, mode);
         g_free (p);
@@ -159,11 +164,12 @@ my_rmdir (const char *s)
 {
     int result;
     char *my_s;
-    vfs_path_t *vpath = vfs_path_from_str (s);
+    vfs_path_t *vpath;
 #ifdef FIXME
     WTree *tree = 0;
 #endif
 
+    vpath = vfs_path_from_str (s);
     /* FIXME: Should receive a Wtree! */
     result = mc_rmdir (vpath);
     if (result == 0)

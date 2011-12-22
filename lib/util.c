@@ -1522,7 +1522,9 @@ mc_util_unlink_backup_if_possible (const char *file_name, const char *backup_suf
 
     if (exist_file (backup_path))
     {
-        vfs_path_t *vpath = vfs_path_from_str (backup_path);
+        vfs_path_t *vpath;
+
+        vpath = vfs_path_from_str (backup_path);
         mc_unlink (vpath);
         vfs_path_free (vpath);
     }

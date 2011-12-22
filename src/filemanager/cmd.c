@@ -1337,7 +1337,7 @@ edit_symlink_cmd (void)
                 if (*dest && strcmp (buffer, dest))
                 {
                     save_cwds_stat ();
-                    if (-1 == mc_unlink (p_vpath))
+                    if (mc_unlink (p_vpath) == -1)
                     {
                         message (D_ERROR, MSG_ERROR, _("edit symlink, unable to remove %s: %s"),
                                  p, unix_error_string (errno));

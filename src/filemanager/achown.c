@@ -743,9 +743,9 @@ apply_advanced_chowns (struct stat *sf)
                  lc_fname, unix_error_string (errno));
     do_file_mark (current_panel, current_file, 0);
     vfs_path_free (vpath);
+
     do
     {
-
         lc_fname = next_file ();
         vpath = vfs_path_from_str (lc_fname);
 
@@ -777,7 +777,6 @@ apply_advanced_chowns (struct stat *sf)
 void
 chown_advanced_cmd (void)
 {
-
     files_on_begin = current_panel->marked;
 
     do
@@ -814,7 +813,9 @@ chown_advanced_cmd (void)
 
         case B_ENTER:
             {
-                vfs_path_t *fname_vpath = vfs_path_from_str (fname);
+                vfs_path_t *fname_vpath;
+
+                fname_vpath = vfs_path_from_str (fname);
                 need_update = 1;
                 if (mc_chmod (fname_vpath, get_mode ()) == -1)
                     message (D_ERROR, MSG_ERROR, _("Cannot chmod \"%s\"\n%s"),
