@@ -741,7 +741,9 @@ cpio_open_archive (struct vfs_s_super *super, const vfs_path_t * vpath,
         {
         case STATUS_EOF:
             {
-                char *archive_name = vfs_path_to_str (vpath);
+                char *archive_name;
+
+                archive_name = vfs_path_to_str (vpath);
                 message (D_ERROR, MSG_ERROR, _("Unexpected end of file\n%s"), archive_name);
                 g_free (archive_name);
                 return 0;

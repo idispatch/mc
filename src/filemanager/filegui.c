@@ -1121,13 +1121,13 @@ file_mask_dialog (FileOpContext * ctx, FileOperation operation,
         else
             ctx->dest_mask++;
         orig_mask = ctx->dest_mask;
-        if (!*ctx->dest_mask
+        if (*ctx->dest_mask == '\0'
             || (!ctx->dive_into_subdirs && !is_wildcarded (ctx->dest_mask)
                 && (!only_one
-                    || (!mc_stat (vpath, &buf) && S_ISDIR (buf.st_mode))))
+                    || (mc_stat (vpath, &buf) == 0 && S_ISDIR (buf.st_mode))))
             || (ctx->dive_into_subdirs
                 && ((!only_one && !is_wildcarded (ctx->dest_mask))
-                    || (only_one && !mc_stat (vpath, &buf) && S_ISDIR (buf.st_mode)))))
+                    || (only_one && mc_stat (vpath, &buf) == 0 && S_ISDIR (buf.st_mode)))))
             ctx->dest_mask = g_strdup ("\\0");
         else
         {

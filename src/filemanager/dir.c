@@ -142,6 +142,7 @@ handle_dirent (dir_list * list, const char *fltr, struct dirent *dp,
                struct stat *buf1, int next_free, int *link_to_dir, int *stale_link)
 {
     vfs_path_t *vpath;
+
     if (dp->d_name[0] == '.' && dp->d_name[1] == 0)
         return 0;
     if (dp->d_name[0] == '.' && dp->d_name[1] == '.' && dp->d_name[2] == 0)
@@ -171,7 +172,7 @@ handle_dirent (dir_list * list, const char *fltr, struct dirent *dp,
     if (S_ISLNK (buf1->st_mode))
     {
         struct stat buf2;
-        if (!mc_stat (vpath, &buf2))
+        if (mc_stat (vpath, &buf2) == 0)
             *link_to_dir = S_ISDIR (buf2.st_mode) != 0;
         else
             *stale_link = 1;
@@ -483,6 +484,7 @@ handle_path (dir_list * list, const char *path,
              struct stat *buf1, int next_free, int *link_to_dir, int *stale_link)
 {
     vfs_path_t *vpath;
+
     if (path[0] == '.' && path[1] == 0)
         return 0;
     if (path[0] == '.' && path[1] == '.' && path[2] == 0)
@@ -504,21 +506,21 @@ handle_path (dir_list * list, const char *path,
     if (S_ISLNK (buf1->st_mode))
     {
         struct stat buf2;
-        if (!mc_stat (vpath, &buf2))
+        if (mc_stat (vpath, &buf2) == 0)
             *link_to_dir = S_ISDIR (buf2.st_mode) != 0;
         else
             *stale_link = 1;
     }
 
+    vfs_path_free (vpath);
+
     /* Need to grow the *list? */
     if (next_free == list->size)
     {
         list->list = g_try_realloc (list->list, sizeof (file_entry) * (list->size + RESIZE_STEPS));
-        if (list->list == NULL)
             return -1;
         list->size += RESIZE_STEPS;
     }
-    vfs_path_free (vpath);
     return 1;
 }
 

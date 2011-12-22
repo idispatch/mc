@@ -394,7 +394,7 @@ extfs_open_archive (int fstype, const char *name, struct archive **pparc)
 {
     const extfs_plugin_info_t *info;
     static dev_t archive_counter = 0;
-    FILE *result;
+    FILE *result = NULL;
     mode_t mode;
     char *cmd;
     struct stat mystat;
@@ -413,19 +413,13 @@ extfs_open_archive (int fstype, const char *name, struct archive **pparc)
     if (info->need_archive)
     {
         if (mc_stat (vpath, &mystat) == -1)
-        {
-            vfs_path_free (vpath);
-            return NULL;
-        }
+            goto ret;
 
         if (!vfs_file_is_local (vpath))
         {
             local_name = mc_getlocalcopy (name);
             if (local_name == NULL)
-            {
-                vfs_path_free (vpath);
-                return NULL;
-            }
+                goto ret;
         }
         tmp = name_quote ((vpath != NULL) ? path_element->path : name, 0);
     }
@@ -445,8 +439,7 @@ extfs_open_archive (int fstype, const char *name, struct archive **pparc)
             mc_ungetlocalcopy (name, local_name, 0);
             g_free (local_name);
         }
-        vfs_path_free (vpath);
-        return NULL;
+        goto ret;
     }
 
 #ifdef ___QNXNTO__
@@ -487,6 +480,7 @@ extfs_open_archive (int fstype, const char *name, struct archive **pparc)
 
     *pparc = current_archive;
 
+  ret:
     vfs_path_free (vpath);
     return result;
 }

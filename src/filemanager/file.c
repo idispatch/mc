@@ -1013,34 +1013,35 @@ recursive_erase (FileOpTotalContext * tctx, FileOpContext * ctx, const char *s)
     FileProgressStatus return_status = FILE_CONT;
     vfs_path_t *vpath;
 
-    if (!strcmp (s, ".."))
+    if (strcmp (s, "..") == 0)
         return FILE_RETRY;
 
     vpath = vfs_path_from_str (s);
     reading = mc_opendir (s);
 
-    if (!reading)
+    if (reading == NULL)
     {
-        vfs_path_free (vpath);
-        return FILE_RETRY;
+        return_status = FILE_RETRY;
+        goto ret;
     }
 
     while ((next = mc_readdir (reading)) && return_status != FILE_ABORT)
     {
         vfs_path_t *tmp_vpath;
+
         if (!strcmp (next->d_name, "."))
             continue;
         if (!strcmp (next->d_name, ".."))
             continue;
         path = concat_dir_and_file (s, next->d_name);
         tmp_vpath = vfs_path_from_str (path);
-        if (mc_lstat (tmp_vpath, &buf))
+        if (mc_lstat (tmp_vpath, &buf) != 0)
         {
             g_free (path);
             mc_closedir (reading);
-            vfs_path_free (vpath);
             vfs_path_free (tmp_vpath);
-            return FILE_RETRY;
+            return_status = FILE_RETRY;
+            goto ret;
         }
         if (S_ISDIR (buf.st_mode))
             return_status = recursive_erase (tctx, ctx, path);
@@ -1051,15 +1052,13 @@ recursive_erase (FileOpTotalContext * tctx, FileOpContext * ctx, const char *s)
     }
     mc_closedir (reading);
     if (return_status == FILE_ABORT)
-    {
-        vfs_path_free (vpath);
-        return return_status;
-    }
+        goto ret;
+
     file_progress_show_deleting (ctx, s);
     if (check_progress_buttons (ctx) == FILE_ABORT)
     {
-        vfs_path_free (vpath);
-        return FILE_ABORT;
+        return_status = FILE_ABORT;
+        goto ret;
     }
     mc_refresh ();
 
@@ -1069,16 +1068,15 @@ recursive_erase (FileOpTotalContext * tctx, FileOpContext * ctx, const char *s)
         if (return_status == FILE_RETRY)
             continue;
         if (return_status == FILE_ABORT)
-        {
-            vfs_path_free (vpath);
-            return return_status;
-        }
+            goto ret;
         if (return_status == FILE_SKIPALL)
             ctx->skip_all = TRUE;
         break;
     }
+
+  ret:
     vfs_path_free (vpath);
-    return FILE_CONT;
+    return return_status;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1982,7 +1980,7 @@ copy_dir_dir (FileOpTotalContext * tctx, FileOpContext * ctx, const char *s, con
 
   retry_dst_stat:
     /* Now, check if the dest dir exists, if not, create it. */
-    if (mc_stat (dst_vpath, &buf))
+    if (mc_stat (dst_vpath, &buf) != 0)
     {
         /* Here the dir doesn't exist : make it ! */
         if (move_over)
@@ -2473,34 +2471,29 @@ compute_dir_size (const char *dirname, const void *ui,
     DIR *dir;
     struct dirent *dirent;
     FileProgressStatus ret = FILE_CONT;
-    vfs_path_t *vpath = vfs_path_from_str (dirname);
+    vfs_path_t *vpath;
+
+    vpath = vfs_path_from_str (dirname);
 
     if (!compute_symlinks)
     {
         res = mc_lstat (vpath, &s);
         if (res != 0)
-        {
-            vfs_path_free (vpath);
-            return ret;
-        }
+            goto ret;
 
         /* don't scan symlink to directory */
         if (S_ISLNK (s.st_mode))
         {
             (*ret_marked)++;
             *ret_total += (uintmax_t) s.st_size;
-            vfs_path_free (vpath);
-            return ret;
+            goto ret;
         }
     }
 
     dir = mc_opendir (dirname);
 
     if (dir == NULL)
-    {
-        vfs_path_free (vpath);
-        return ret;
-    }
+        goto ret;
 
     while ((dirent = mc_readdir (dir)) != NULL)
     {
@@ -2558,6 +2551,7 @@ compute_dir_size (const char *dirname, const void *ui,
     }
 
     mc_closedir (dir);
+ ret:
     vfs_path_free (vpath);
     return ret;
 }
@@ -2948,7 +2942,9 @@ panel_operate (void *source_panel, FileOperation operation, gboolean force_singl
                         case OP_COPY:
                             /* we use file_mask_op_follow_links only with OP_COPY */
                             {
-                                vfs_path_t *vpath = vfs_path_from_str (source_with_path);
+                                vfs_path_t *vpath;
+
+                                vpath = vfs_path_from_str (source_with_path);
                                 ctx->stat_func (vpath, &src_stat);
                                 vfs_path_free (vpath);
                             }

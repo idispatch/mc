@@ -390,16 +390,14 @@ apply_mask (struct stat *sf)
     {
         char *fname;
         vfs_path_t *vpath;
+        gboolean ok;
 
         fname = next_file ();
         vpath = vfs_path_from_str (fname);
-        if (mc_stat (vpath, sf) != 0)
-        {
-            vfs_path_free (vpath);
-            return;
-        }
+        ok = (mc_stat (vpath, sf) == 0);
         vfs_path_free (vpath);
-
+        if (!ok)
+            return;
 
         c_stat = sf->st_mode;
 

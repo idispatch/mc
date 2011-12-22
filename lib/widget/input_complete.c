@@ -215,7 +215,7 @@ filename_completion_function (const char *text, int state, input_complete_t flag
             vpath = vfs_path_build_filename (dirname, entry->d_name, (char *) NULL);
 
             /* Unix version */
-            if (!mc_stat (vpath, &tempstat))
+            if (mc_stat (vpath, &tempstat) == 0)
             {
                 uid_t my_uid = getuid ();
                 gid_t my_gid = getgid ();

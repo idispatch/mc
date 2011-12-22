@@ -380,7 +380,9 @@ exec_extension (const char *filename, const char *lc_data, int *move_dir, int st
 
     if (localcopy)
     {
-        vfs_path_t *vpath_local = vfs_path_from_str (localcopy);
+        vfs_path_t *vpath_local;
+
+        vpath_local = vfs_path_from_str (localcopy);
         mc_stat (vpath_local, &mystat);
         mc_ungetlocalcopy (filename, localcopy, localmtime != mystat.st_mtime);
         vfs_path_free (vpath_local);
@@ -703,8 +705,11 @@ regex_command (const char *filename, const char *action, int *move_dir)
             g_free (title);
         }
     }
+
     {
-        vfs_path_t *vpath = vfs_path_from_str (filename);
+        vfs_path_t *vpath;
+
+        vpath = vfs_path_from_str (filename);
         mc_stat (vpath, &mystat);
         vfs_path_free (vpath);
     }

@@ -127,6 +127,7 @@ resolve_symlinks (const char *path)
     *r++ = PATH_SEP;
     *r = 0;
     p = path;
+
     for (;;)
     {
         q = strchr (p + 1, PATH_SEP);
@@ -141,10 +142,9 @@ resolve_symlinks (const char *path)
         if (mc_lstat (vpath, &mybuf) < 0)
         {
             g_free (buf);
-            g_free (buf2);
-            vfs_path_free (vpath);
+            buf = NULL;
             *q = c;
-            return NULL;
+            goto ret;
         }
         if (!S_ISLNK (mybuf.st_mode))
             strcpy (r, p + 1);
@@ -154,9 +154,9 @@ resolve_symlinks (const char *path)
             if (len < 0)
             {
                 g_free (buf);
-                g_free (buf2);
+                buf = NULL;
                 *q = c;
-                return NULL;
+                goto ret;
             }
             buf2[len] = 0;
             if (*buf2 == PATH_SEP)
@@ -180,6 +180,8 @@ resolve_symlinks (const char *path)
         strcpy (buf, PATH_SEP_STR);
     else if (*(r - 1) == PATH_SEP && r != buf + 1)
         *(r - 1) = 0;
+
+ ret:
     g_free (buf2);
     vfs_path_free (vpath);
     return buf;

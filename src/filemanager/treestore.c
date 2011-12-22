@@ -795,7 +795,7 @@ tree_entry *
 tree_store_start_check (const char *path)
 {
     tree_entry *current, *retval;
-    int len;
+    size_t len;
 
     if (!ts.loaded)
         return NULL;
