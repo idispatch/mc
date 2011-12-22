@@ -547,11 +547,10 @@ do_load_dir (const char *path, dir_list * list, sortfn * sort, gboolean lc_rever
     next_free++;
 
     dirp = mc_opendir (vpath);
-    if (!dirp)
+    if (dirp == NULL)
     {
         message (D_ERROR, MSG_ERROR, _("Cannot read directory contents"));
-        vfs_path_free (vpath);
-        return next_free;
+        goto ret;
     }
 
     tree_store_start_check (path);
@@ -569,8 +568,7 @@ do_load_dir (const char *path, dir_list * list, sortfn * sort, gboolean lc_rever
         {
             tree_store_end_check ();
             mc_closedir (dirp);
-            vfs_path_free (vpath);
-            return next_free;
+            goto ret;
         }
         list->list[next_free].fnamelen = NLENGTH (dp);
         list->list[next_free].fname = g_strndup (dp->d_name, list->list[next_free].fnamelen);
@@ -592,6 +590,7 @@ do_load_dir (const char *path, dir_list * list, sortfn * sort, gboolean lc_rever
 
     mc_closedir (dirp);
     tree_store_end_check ();
+  ret:
     vfs_path_free (vpath);
     return next_free;
 }
@@ -630,10 +629,9 @@ do_reload_dir (const char *path, dir_list * list, sortfn * sort, int count,
     GHashTable *marked_files;
     vfs_path_t *vpath;
 
-
     vpath = vfs_path_from_str (path);
     dirp = mc_opendir (vpath);
-    if (!dirp)
+    if (dirp == NULL)
     {
         message (D_ERROR, MSG_ERROR, _("Cannot read directory contents"));
         clean_dir (list, count);
@@ -669,8 +667,7 @@ do_reload_dir (const char *path, dir_list * list, sortfn * sort, int count,
         {
             clean_dir (list, count);
             clean_dir (&dir_copy, count);
-            vfs_path_free (vpath);
-            return next_free;
+            goto ret;
         }
 
         if (get_dotdot_dir_stat (path, &st))
@@ -699,8 +696,7 @@ do_reload_dir (const char *path, dir_list * list, sortfn * sort, int count,
              */
             tree_store_end_check ();
             g_hash_table_destroy (marked_files);
-            vfs_path_free (vpath);
-            return next_free;
+            goto ret;
         }
 
         list->list[next_free].f.marked = 0;
@@ -739,6 +735,7 @@ do_reload_dir (const char *path, dir_list * list, sortfn * sort, int count,
         do_sort (list, sort, next_free - 1, lc_reverse, lc_case_sensitive, exec_ff);
     }
     clean_dir (&dir_copy, count);
+  ret:
     vfs_path_free (vpath);
     return next_free;
 }
