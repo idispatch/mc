@@ -807,9 +807,10 @@ vfs_s_getlocalcopy (const vfs_path_t * vpath)
 
     if (fh != NULL)
     {
-        struct vfs_class *me = vfs_path_get_by_index (vpath, -1)->class;
-        if ((MEDATA->flags & VFS_S_USETMP) != 0 && (fh->ino != NULL)
-            && (fh->ino->localname != NULL))
+        struct vfs_class *me;
+
+        me = vfs_path_get_by_index (vpath, -1)->class;
+        if ((MEDATA->flags & VFS_S_USETMP) != 0 && (fh->ino != NULL))
             local = g_strdup (fh->ino->localname);
 
         vfs_s_close (fh);
@@ -1409,19 +1410,16 @@ vfs_s_init_class (struct vfs_class *vclass, struct vfs_s_subclass *sub)
     vclass->getid = vfs_s_getid;
     vclass->nothingisopen = vfs_s_nothingisopen;
     vclass->free = vfs_s_free;
-    if (sub->flags & VFS_S_USETMP)
+    if ((sub->flags & VFS_S_USETMP) != 0)
     {
         vclass->getlocalcopy = vfs_s_getlocalcopy;
         vclass->ungetlocalcopy = vfs_s_ungetlocalcopy;
         sub->find_entry = vfs_s_find_entry_linear;
     }
+    else if ((sub->flags & VFS_S_REMOTE) != 0)
+        sub->find_entry = vfs_s_find_entry_linear;
     else
-    {
-        if (sub->flags & VFS_S_REMOTE)
-            sub->find_entry = vfs_s_find_entry_linear;
-        else
-            sub->find_entry = vfs_s_find_entry_tree;
-    }
+        sub->find_entry = vfs_s_find_entry_tree;
     vclass->setctl = vfs_s_setctl;
     sub->dir_uptodate = vfs_s_dir_uptodate;
 }
