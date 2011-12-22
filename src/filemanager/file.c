@@ -2672,8 +2672,11 @@ panel_operate (void *source_panel, FileOperation operation, gboolean force_singl
         /* One file: FIXME mc_chdir will take user out of any vfs */
         if ((operation != OP_COPY) && (get_current_type () == view_tree))
         {
-            vfs_path_t *vpath = vfs_path_from_str (PATH_SEP_STR);
-            int chdir_retcode = mc_chdir (vpath);
+            vfs_path_t *vpath;
+            int chdir_retcode;
+
+            vpath = vfs_path_from_str (PATH_SEP_STR);
+            chdir_retcode = mc_chdir (vpath);
             vfs_path_free (vpath);
             if (chdir_retcode < 0)
             {

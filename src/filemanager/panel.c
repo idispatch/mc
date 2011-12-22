@@ -80,9 +80,7 @@
 /* The hook list for the select file function */
 hook_t *select_file_hook = NULL;
 
-panelized_panel_t panelized_panel = { {NULL, 0}
-, -1, {'\0'}
-};
+panelized_panel_t panelized_panel = { { NULL, 0 },  -1, { '\0' } };
 
 static const char *string_file_name (file_entry *, int);
 static const char *string_file_size (file_entry *, int);
@@ -3362,7 +3360,9 @@ reload_panelized (WPanel * panel)
     if (panel != current_panel)
     {
         int ret;
-        vfs_path_t *vpath = vfs_path_from_str (panel->cwd);
+        vfs_path_t *vpath;
+
+        vpath = vfs_path_from_str (panel->cwd);
         ret = mc_chdir (vpath);
         vfs_path_free (vpath);
     }
@@ -3398,7 +3398,9 @@ reload_panelized (WPanel * panel)
     if (panel != current_panel)
     {
         int ret;
-        vfs_path_t *vpath = vfs_path_from_str (current_panel->cwd);
+        vfs_path_t *vpath;
+
+        vpath = vfs_path_from_str (current_panel->cwd);
         ret = mc_chdir (vpath);
         vfs_path_free (vpath);
     }
@@ -3758,8 +3760,9 @@ panel_new_with_dir (const char *panel_name, const char *wpath)
 #endif
 
     {
-        vfs_path_t *vpath = vfs_path_from_str (panel->cwd);
+        vfs_path_t *vpath;
 
+        vpath = vfs_path_from_str (panel->cwd);
         if (mc_chdir (vpath) != 0)
         {
             panel->codepage = SELECT_CHARSET_NO_TRANSLATE;
@@ -3775,11 +3778,12 @@ panel_new_with_dir (const char *panel_name, const char *wpath)
                      panel->sort_info.exec_first, panel->filter);
 
     /* Restore old right path */
+    if (curdir[0] != '\0')
     {
-        vfs_path_t *vpath = vfs_path_from_str (curdir);
+        vfs_path_t *vpath;
 
-        if (curdir[0] != '\0')
-            err = mc_chdir (vpath);
+        vpath = vfs_path_from_str (curdir);
+        err = mc_chdir (vpath);
         vfs_path_free (vpath);
     }
 
@@ -3800,14 +3804,15 @@ panel_reload (WPanel * panel)
 
     do
     {
+        vfs_path_t *vpath;
+        gboolean ok;
         char *last_slash;
-        vfs_path_t *vpath = vfs_path_from_str (panel->cwd);
-        if (mc_chdir (vpath) != -1)
-        {
-            vfs_path_free (vpath);
-            break;
-        }
+
+        vpath = vfs_path_from_str (panel->cwd);
+        ok = (mc_chdir (vpath) != -1);
         vfs_path_free (vpath);
+        if (ok)
+            break;
 
         if (panel->cwd[0] == PATH_SEP && panel->cwd[1] == 0)
         {

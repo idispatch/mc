@@ -611,6 +611,7 @@ create_panels (void)
     if (mc_run_param0 != NULL)
     {
         vfs_path_t *vpath;
+
         if (mc_run_param1 != NULL)
         {
             /* Ok, user has specified two dirs, save the original one,
@@ -628,8 +629,10 @@ create_panels (void)
     /* The other panel */
     if (mc_run_param1 != NULL)
     {
-        const char *cd_dir = (original_dir[0] != '\0') ? original_dir : mc_run_param1;
-        vfs_path_t *vpath = vfs_path_from_str (cd_dir);
+        const char *cd_dir = (original_dir != NULL) ? original_dir : mc_run_param1;
+        vfs_path_t *vpath;
+
+        vpath = vfs_path_from_str (cd_dir);
         mc_chdir (vpath);
         vfs_path_free (vpath);
     }
