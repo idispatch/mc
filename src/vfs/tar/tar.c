@@ -291,7 +291,9 @@ tar_open_archive_int (struct vfs_class *me, const vfs_path_t * vpath, struct vfs
     result = mc_open (vpath, O_RDONLY);
     if (result == -1)
     {
-        char *name = vfs_path_to_str (vpath);
+        char *name;
+
+        name = vfs_path_to_str (vpath);
         message (D_ERROR, MSG_ERROR, _("Cannot open tar archive\n%s"), name);
         g_free (name);
         ERRNOR (ENOENT, -1);
@@ -311,6 +313,7 @@ tar_open_archive_int (struct vfs_class *me, const vfs_path_t * vpath, struct vfs
     {
         char *s;
         vfs_path_t *tmp_vpath;
+
         mc_close (result);
         s = g_strconcat (archive->name, decompress_extension (type), (char *) NULL);
         tmp_vpath = vfs_path_from_str (s);

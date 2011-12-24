@@ -56,8 +56,9 @@ mc_config_new_or_override_file (mc_config_t * mc_config, const gchar * ini_path,
     gboolean ret;
     int fd;
     ssize_t cur_written;
-    vfs_path_t *ini_vpath = vfs_path_from_str (ini_path);
+    vfs_path_t *ini_vpath;
 
+    ini_vpath = vfs_path_from_str (ini_path);
     data = g_key_file_to_data (mc_config->handle, &len, NULL);
     if (!exist_file (ini_path))
     {

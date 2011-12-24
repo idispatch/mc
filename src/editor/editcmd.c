@@ -1496,10 +1496,13 @@ edit_save_as_cmd (WEdit * edit)
         else
         {
             int rv;
+
             if (strcmp (edit->filename, exp))
             {
                 int file;
-                vfs_path_t *tmp_vpath = vfs_path_from_str (exp);
+                vfs_path_t *tmp_vpath;
+
+                tmp_vpath = vfs_path_from_str (exp);
                 different_filename = 1;
                 file = mc_open (tmp_vpath, O_RDONLY | O_BINARY);
                 vfs_path_free (tmp_vpath);
@@ -2596,8 +2599,9 @@ int
 edit_save_block (WEdit * edit, const char *filename, long start, long finish)
 {
     int len, file;
-    vfs_path_t *vpath = vfs_path_from_str (filename);
+    vfs_path_t *vpath;
 
+    vpath = vfs_path_from_str (filename);
     file = mc_open (vpath, O_CREAT | O_WRONLY | O_TRUNC,
                     S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH | O_BINARY);
     vfs_path_free (vpath);
@@ -2607,10 +2611,12 @@ edit_save_block (WEdit * edit, const char *filename, long start, long finish)
     if (edit->column_highlight)
     {
         int r;
+
         r = mc_write (file, VERTICAL_MAGIC, sizeof (VERTICAL_MAGIC));
         if (r > 0)
         {
             unsigned char *block, *p;
+
             p = block = edit_get_block (edit, start, finish, &len);
             while (len)
             {
@@ -2627,6 +2633,7 @@ edit_save_block (WEdit * edit, const char *filename, long start, long finish)
     {
         unsigned char *buf;
         int i = start, end;
+
         len = finish - start;
         buf = g_malloc0 (TEMP_BUF_LEN);
         while (start != finish)

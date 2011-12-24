@@ -75,21 +75,22 @@ struct dirent *mc_readdir_result = NULL;
 static char *
 mc_def_getlocalcopy (const char *filename)
 {
-    char *tmp;
-    int fdin, fdout;
+    char *tmp = NULL;
+    int fdin = -1, fdout = -1;
     ssize_t i;
-    char buffer[8192];
+    char buffer[BUF_1K * 8];
     struct stat mystat;
-    vfs_path_t *vpath = vfs_path_from_str (filename);
+    vfs_path_t *vpath;
 
+    vpath = vfs_path_from_str (filename);
     fdin = mc_open (vpath, O_RDONLY | O_LINEAR);
     if (fdin == -1)
-        return NULL;
+        goto fail;
 
     fdout = vfs_mkstemps (&tmp, "vfs", filename);
-
     if (fdout == -1)
         goto fail;
+
     while ((i = mc_read (fdin, buffer, sizeof (buffer))) > 0)
     {
         if (write (fdout, buffer, i) != i)
@@ -129,11 +130,14 @@ static int
 mc_def_ungetlocalcopy (struct vfs_class *vfs, const char *filename,
                        const char *local, int has_changed)
 {
-    vfs_path_t *vpath = vfs_path_from_str (filename);
+    vfs_path_t *vpath;
     int fdin = -1, fdout = -1;
+
+    vpath = vfs_path_from_str (filename);
+
     if (has_changed)
     {
-        char buffer[8192];
+        char buffer[BUF_1K * 8];
         ssize_t i;
 
         if (!vfs->write)

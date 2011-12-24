@@ -225,13 +225,15 @@ cpio_open_cpio_file (struct vfs_class *me, struct vfs_s_super *super, const vfs_
     fd = mc_open (vpath, O_RDONLY);
     if (fd == -1)
     {
-        char *name = vfs_path_to_str (vpath);
+        char *name;
+
+        name = vfs_path_to_str (vpath);
         message (D_ERROR, MSG_ERROR, _("Cannot open cpio archive\n%s"), name);
         g_free (name);
         return -1;
     }
 
-    super->name = vfs_path_to_str (vpath);;
+    super->name = vfs_path_to_str (vpath);
     super->data = g_new (cpio_super_data_t, 1);
     arch = (cpio_super_data_t *) super->data;
     arch->fd = -1;              /* for now */

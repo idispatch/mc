@@ -273,7 +273,7 @@ gboolean
 mcview_load (mcview_t * view, const char *command, const char *file, int start_line)
 {
     gboolean retval = FALSE;
-    vfs_path_t *vpath = vfs_path_from_str (file);
+    vfs_path_t *vpath = NULL;
 
     assert (view->bytes_per_line != 0);
 
@@ -313,6 +313,7 @@ mcview_load (mcview_t * view, const char *command, const char *file, int start_l
         struct stat st;
 
         /* Open the file */
+        vpath = vfs_path_from_str (file);
         fd = mc_open (vpath, O_RDONLY | O_NONBLOCK);
         if (fd == -1)
         {

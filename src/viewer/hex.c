@@ -350,8 +350,8 @@ mcview_hexedit_save_changes (mcview_t * view)
         vfs_path_t *tmp_vpath;
 
         assert (view->filename != NULL);
-        tmp_vpath = vfs_path_from_str (view->filename);
 
+        tmp_vpath = vfs_path_from_str (view->filename);
         fp = mc_open (tmp_vpath, O_WRONLY);
         vfs_path_free (tmp_vpath);
         if (fp != -1)
