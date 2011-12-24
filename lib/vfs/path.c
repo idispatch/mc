@@ -1168,6 +1168,7 @@ vfs_path_append_vpath_new (const vfs_path_t * first_vpath, ...)
     do
     {
         int vindex;
+
         for (vindex = 0; vindex < vfs_path_elements_count (current_vpath); vindex++)
             ret_vpath->path =
                 g_list_append (ret_vpath->path,
@@ -1313,14 +1314,15 @@ vfs_path_tokens_get (const vfs_path_t * vpath, ssize_t start_position, size_t le
 vfs_path_t *
 vfs_path_vtokens_get (const vfs_path_t * vpath, ssize_t start_position, size_t length)
 {
-    char *str_tokens = vfs_path_tokens_get (vpath, start_position, length);
-    vfs_path_t *ret_vpath;
+    char *str_tokens;
+    vfs_path_t *ret_vpath = NULL;
 
-    if (str_tokens == NULL)
-        return NULL;
-
-    ret_vpath = vfs_path_from_str_flags (str_tokens, VPF_NO_CANON);
-    g_free (str_tokens);
+    str_tokens = vfs_path_tokens_get (vpath, start_position, length);
+    if (str_tokens != NULL)
+    {
+        ret_vpath = vfs_path_from_str_flags (str_tokens, VPF_NO_CANON);
+        g_free (str_tokens);
+    }
     return ret_vpath;
 }
 
