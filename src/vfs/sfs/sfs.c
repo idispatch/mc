@@ -179,7 +179,9 @@ sfs_vfmake (const vfs_path_t * vpath, vfs_path_t * cache_vpath)
                 break;
             case '3':
                 {
-                    vfs_path_element_t *tmp_path_element = vfs_path_get_by_index (cache_vpath, -1);
+                    vfs_path_element_t *tmp_path_element;
+
+                    tmp_path_element = vfs_path_get_by_index (cache_vpath, -1);
                     ptr = tmp_path_element->path;
                     break;
                 }

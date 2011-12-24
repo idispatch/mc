@@ -1221,6 +1221,7 @@ vfs_s_open (const vfs_path_t * vpath, int flags, mode_t mode)
         if ((VFSDATA (path_element)->flags & VFS_S_USETMP) != 0)
         {
             vfs_path_t *tmp_vpath;
+
             tmp_handle = vfs_mkstemps (&tmp_vpath, path_element->class->name, name);
             ino->localname = vfs_path_to_str (tmp_vpath);
             vfs_path_free (tmp_vpath);

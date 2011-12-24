@@ -1970,12 +1970,13 @@ edit_get_write_filter (const vfs_path_t * write_name_vpath, const char *filename
 {
     int i;
     char *p, *writename;
-    vfs_path_element_t *path_element = vfs_path_get_by_index (write_name_vpath, -1);
+    vfs_path_element_t *path_element;
 
     i = edit_find_filter (filename);
     if (i < 0)
         return NULL;
 
+    path_element = vfs_path_get_by_index (write_name_vpath, -1);
     writename = name_quote (path_element->path, 0);
     p = g_strdup_printf (all_filters[i].write, writename);
     g_free (writename);

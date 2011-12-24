@@ -434,6 +434,7 @@ execute_menu_command (WEdit * edit_widget, const char *commands, gboolean show_p
     {
         message (D_ERROR, MSG_ERROR, _("Cannot create temporary command file\n%s"),
                  unix_error_string (errno));
+        vfs_path_free (file_name_vpath);
         return;
     }
     cmd_file = fdopen (cmd_file_fd, "w");
@@ -531,7 +532,9 @@ execute_menu_command (WEdit * edit_widget, const char *commands, gboolean show_p
     mc_chmod (file_name_vpath, S_IRWXU);
     if (run_view)
     {
-        char *file_name = vfs_path_to_str (file_name_vpath);
+        char *file_name;
+
+        file_name = vfs_path_to_str (file_name_vpath);
         mcview_viewer (file_name, NULL, 0);
         g_free (file_name);
         dialog_switch_process_pending ();
@@ -540,9 +543,10 @@ execute_menu_command (WEdit * edit_widget, const char *commands, gboolean show_p
     {
         /* execute the command indirectly to allow execution even
          * on no-exec filesystems. */
-        char *file_name = vfs_path_to_str (file_name_vpath);
+        char *file_name, *cmd;
 
-        char *cmd = g_strconcat ("/bin/sh ", file_name, (char *) NULL);
+        file_name = vfs_path_to_str (file_name_vpath);
+        cmd = g_strconcat ("/bin/sh ", file_name, (char *) NULL);
         g_free (file_name);
         if (!show_prompt)
         {

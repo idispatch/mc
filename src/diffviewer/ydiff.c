@@ -152,6 +152,7 @@ dview_select_encoding (WDiff * dview)
 #endif
 }
 
+/* --------------------------------------------------------------------------------------------- */
 
 static gboolean
 rewrite_backup_content (const vfs_path_t * from_file_name_vpath, const char *to_file_name)
@@ -159,8 +160,9 @@ rewrite_backup_content (const vfs_path_t * from_file_name_vpath, const char *to_
     FILE *backup_fd;
     char *contents;
     gsize length;
-    const char *from_file_name = vfs_path_get_by_index (from_file_name_vpath, -1)->path;
+    const char *from_file_name;
 
+    from_file_name = vfs_path_get_by_index (from_file_name_vpath, -1)->path;
     if (!g_file_get_contents (from_file_name, &contents, &length, NULL))
         return FALSE;
 

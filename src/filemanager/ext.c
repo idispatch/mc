@@ -119,10 +119,7 @@ exec_extension (const char *filename, const char *lc_data, int *move_dir, int st
     vpath = vfs_path_from_str (filename);
 
     /* Avoid making a local copy if we are doing a cd */
-    if (!vfs_file_is_local (vpath))
-        do_local_copy = 1;
-    else
-        do_local_copy = 0;
+    do_local_copy = vfs_file_is_local (vpath) ? 0 : 1;
 
     /*
      * All commands should be run in /bin/sh regardless of user shell.
@@ -136,7 +133,7 @@ exec_extension (const char *filename, const char *lc_data, int *move_dir, int st
     {
         message (D_ERROR, MSG_ERROR,
                  _("Cannot create temporary command file\n%s"), unix_error_string (errno));
-        return;
+        goto ret;
     }
 
     cmd_file = fdopen (cmd_file_fd, "w");
@@ -163,9 +160,7 @@ exec_extension (const char *filename, const char *lc_data, int *move_dir, int st
                         mc_ungetlocalcopy (filename, localcopy, 0);
                         g_free (localcopy);
                     }
-                    vfs_path_free (file_name_vpath);
-                    vfs_path_free (vpath);
-                    return;
+                    goto ret;
                 }
                 fputs (parameter, cmd_file);
                 written_nonspace = 1;
@@ -229,14 +224,13 @@ exec_extension (const char *filename, const char *lc_data, int *move_dir, int st
                                 if (do_local_copy)
                                 {
                                     vfs_path_t *vpath_local;
+
                                     localcopy = mc_getlocalcopy (filename);
                                     if (localcopy == NULL)
                                     {
                                         fclose (cmd_file);
                                         mc_unlink (file_name_vpath);
-                                        vfs_path_free (file_name_vpath);
-                                        vfs_path_free (vpath);
-                                        return;
+                                        goto ret;
                                     }
                                     vpath_local = vfs_path_from_str (localcopy);
                                     mc_stat (vpath_local, &mystat);
@@ -247,6 +241,7 @@ exec_extension (const char *filename, const char *lc_data, int *move_dir, int st
                                 else
                                 {
                                     vfs_path_element_t *path_element;
+
                                     path_element = vfs_path_get_by_index (vpath, -1);
                                     text = quote_func (path_element->path, 0);
                                 }
@@ -287,7 +282,9 @@ exec_extension (const char *filename, const char *lc_data, int *move_dir, int st
      */
     if (!run_view)
     {
-        char *file_name = vfs_path_to_str (file_name_vpath);
+        char *file_name;
+
+        file_name = vfs_path_to_str (file_name_vpath);
         fprintf (cmd_file, "\n/bin/rm -f %s\n", file_name);
         g_free (file_name);
     }
@@ -302,7 +299,9 @@ exec_extension (const char *filename, const char *lc_data, int *move_dir, int st
     }
     else
     {
-        char *file_name = vfs_path_to_str (file_name_vpath);
+        char *file_name;
+
+        file_name = vfs_path_to_str (file_name_vpath);
         /* Set executable flag on the command file ... */
         mc_chmod (file_name_vpath, S_IRWXU);
         /* ... but don't rely on it - run /bin/sh explicitly */
@@ -381,7 +380,6 @@ exec_extension (const char *filename, const char *lc_data, int *move_dir, int st
         }
     }
 
-    vfs_path_free (file_name_vpath);
     g_free (cmd);
 
     if (localcopy)
@@ -394,6 +392,9 @@ exec_extension (const char *filename, const char *lc_data, int *move_dir, int st
         vfs_path_free (vpath_local);
         g_free (localcopy);
     }
+
+  ret:
+    vfs_path_free (file_name_vpath);
     vfs_path_free (vpath);
 }
 

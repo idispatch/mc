@@ -303,10 +303,8 @@ char *mc_getlocalcopy (const char *pathname);
 int mc_ungetlocalcopy (const char *pathname, const char *local, int has_changed);
 int mc_mkstemps (vfs_path_t ** pname_vpath, const char *prefix, const char *suffix);
 
-/* Creating temporary files safely */
+/* Create temporary files safely */
 const char *mc_tmpdir (void);
-
-
 
 /*** inline functions ****************************************************************************/
 #endif /* MC_VFS_VFS_H */

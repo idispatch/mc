@@ -331,13 +331,13 @@ edit_save_file (WEdit * edit, const char *filename)
     else
     {                           /* change line breaks */
         FILE *file;
-        vfs_path_element_t *path_element = vfs_path_get_by_index (savename_vpath, -1);
+        vfs_path_element_t *path_element;
 
         mc_close (fd);
 
+        path_element = vfs_path_get_by_index (savename_vpath, -1);
         file = (FILE *) fopen (path_element->path, "w");
-
-        if (file)
+        if (file != NULL)
         {
             filelen = edit_write_stream (edit, file);
             fclose (file);

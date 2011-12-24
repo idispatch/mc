@@ -106,11 +106,10 @@ mc_def_getlocalcopy (const char *filename)
     fdin = -1;
     if (i == -1)
         goto fail;
-    if (close (fdout) == -1)
-    {
-        fdout = -1;
+    i = mc_close (fdout);
+    fdout = -1;
+    if (i == -1)
         goto fail;
-    }
 
     if (mc_stat (vpath, &mystat) != -1)
         mc_chmod (tmp_vpath, mystat.st_mode);
@@ -854,19 +853,17 @@ mc_tmpdir (void)
     const char *error = NULL;
 
     /* Check if already correctly initialized */
-    if (tmpdir && lstat (tmpdir, &st) == 0 && S_ISDIR (st.st_mode) &&
+    if (tmpdir != NULL && lstat (tmpdir, &st) == 0 && S_ISDIR (st.st_mode) &&
         st.st_uid == getuid () && (st.st_mode & 0777) == 0700)
         return tmpdir;
 
     sys_tmp = getenv ("TMPDIR");
-    if (!sys_tmp || sys_tmp[0] != '/')
-    {
+    if (sys_tmp == NULL || !g_path_is_absolute (sys_tmp))
         sys_tmp = TMPDIR_DEFAULT;
-    }
 
     pwd = getpwuid (getuid ());
 
-    if (pwd)
+    if (pwd != NULL)
         g_snprintf (buffer, sizeof (buffer), "%s/mc-%s", sys_tmp, pwd->pw_name);
     else
         g_snprintf (buffer, sizeof (buffer), "%s/mc-%lu", sys_tmp, (unsigned long) getuid ());
@@ -899,10 +896,10 @@ mc_tmpdir (void)
     {
         int test_fd;
         char *fallback_prefix;
-        int fallback_ok = 0;
+        gboolean fallback_ok = FALSE;
         vfs_path_t *test_vpath;
 
-        if (*error)
+        if (*error != '\0')
             fprintf (stderr, error, buffer);
 
         /* Test if sys_tmp is suitable for temporary files */
@@ -911,7 +908,9 @@ mc_tmpdir (void)
         g_free (fallback_prefix);
         if (test_fd != -1)
         {
-            char *test_fn = vfs_path_to_str (test_vpath);
+            char *test_fn;
+
+            test_fn = vfs_path_to_str (test_vpath);
             close (test_fd);
             test_fd = open (test_fn, O_RDONLY);
             g_free (test_fn);
@@ -919,7 +918,7 @@ mc_tmpdir (void)
             {
                 close (test_fd);
                 unlink (test_fn);
-                fallback_ok = 1;
+                fallback_ok = TRUE;
             }
         }
 
@@ -942,7 +941,7 @@ mc_tmpdir (void)
 
     tmpdir = buffer;
 
-    if (!error)
+    if (error == NULL)
         g_setenv ("MC_TMPDIR", tmpdir, TRUE);
 
     return tmpdir;
