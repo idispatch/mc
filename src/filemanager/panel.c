@@ -1080,14 +1080,18 @@ show_free_space (WPanel * panel)
  */
 
 static char *
-panel_correct_path_for_showing (WPanel * panel)
+panel_correct_path_to_show (WPanel * panel)
 {
-    GString *ret_str = g_string_new ("");
-    const vfs_path_element_t *path_element = vfs_path_get_by_index (panel->cwd_vpath, -1);
+    const vfs_path_element_t *path_element;
+    GString *ret_str;
+
+    vfs_path_element_t *path_element = vfs_path_get_by_index (panel->cwd_vpath, -1);
+    ret_str = g_string_new ("");
 
     if ((path_element->class->flags & VFSF_LOCAL) == 0)
     {
         char *url_str;
+
         g_string_append (ret_str, path_element->vfs_prefix);
         g_string_append (ret_str, VFS_PATH_URL_DELIMITER);
 
@@ -1102,7 +1106,9 @@ panel_correct_path_for_showing (WPanel * panel)
     }
     else
     {
-        char *tmp_path = g_strdup (path_element->path);
+        char *tmp_path;
+
+        tmp_path = g_strdup (path_element->path);
         g_string_append (ret_str, strip_home_and_password (tmp_path));
         g_free (tmp_path);
     }
@@ -1115,15 +1121,16 @@ panel_correct_path_for_showing (WPanel * panel)
  *
  * @param panel WPanel object
  *
- * @return newly allocated string or NULL if path charset same as system charset
+ * @return newly allocated string or NULL if path charset is same as system charset
  */
 
 static char *
 panel_get_encoding_info_str (WPanel * panel)
 {
     char *ret_str = NULL;
-    const vfs_path_element_t *path_element = vfs_path_get_by_index (panel->cwd_vpath, -1);
+    const vfs_path_element_t *path_element;
 
+    path_element = vfs_path_get_by_index (panel->cwd_vpath, -1);
     if (path_element->encoding != NULL)
         ret_str = g_strdup_printf ("[%s]", path_element->encoding);
 
@@ -1176,7 +1183,7 @@ show_dir (WPanel * panel)
     if (panel->active)
         tty_setcolor (REVERSE_COLOR);
 
-    tmp = panel_correct_path_for_showing (panel);
+    tmp = panel_correct_path_to_show (panel);
     tty_printf (" %s ",
                 str_term_trim (tmp, min (max (panel->widget.cols - 12, 0), panel->widget.cols)));
     g_free (tmp);
