@@ -126,7 +126,7 @@ mc_def_getlocalcopy (const vfs_path_t * filename_vpath)
 
 static int
 mc_def_ungetlocalcopy (const vfs_path_t * filename_vpath,
-                       const vfs_path_t * local_vpath, int has_changed)
+                       const vfs_path_t * local_vpath, gboolean has_changed)
 {
     int fdin = -1, fdout = -1;
     char *local;
@@ -627,8 +627,8 @@ mc_getlocalcopy (const vfs_path_t * pathname_vpath)
     if (vfs_path_element_valid (path_element))
     {
         result = path_element->class->getlocalcopy != NULL ?
-            path_element->class->
-            getlocalcopy (pathname_vpath) : mc_def_getlocalcopy (pathname_vpath);
+            path_element->class-> getlocalcopy (pathname_vpath) :
+            mc_def_getlocalcopy (pathname_vpath);
         if (result == NULL)
             errno = vfs_ferrno (path_element->class);
     }
@@ -639,7 +639,7 @@ mc_getlocalcopy (const vfs_path_t * pathname_vpath)
 
 int
 mc_ungetlocalcopy (const vfs_path_t * pathname_vpath, const vfs_path_t * local_vpath,
-                   int has_changed)
+                   gboolean has_changed)
 {
     int return_value = -1;
     vfs_path_element_t *path_element;
@@ -650,12 +650,10 @@ mc_ungetlocalcopy (const vfs_path_t * pathname_vpath, const vfs_path_t * local_v
     path_element = vfs_path_get_by_index (pathname_vpath, -1);
 
     if (vfs_path_element_valid (path_element))
-    {
         return_value = path_element->class->ungetlocalcopy != NULL ?
-            path_element->class->ungetlocalcopy (pathname_vpath, local_vpath,
-                                                 has_changed) :
+            path_element->class->ungetlocalcopy (pathname_vpath, local_vpath, has_changed) :
             mc_def_ungetlocalcopy (pathname_vpath, local_vpath, has_changed);
-    }
+
     return return_value;
 }
 

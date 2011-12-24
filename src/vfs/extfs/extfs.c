@@ -374,8 +374,10 @@ extfs_free_archive (struct archive *archive)
     if (archive->local_name != NULL)
     {
         struct stat my;
-        vfs_path_t *local_name_vpath = vfs_path_from_str (archive->local_name);
-        vfs_path_t *name_vpath = vfs_path_from_str (archive->local_name);
+        vfs_path_t *local_name_vpath, *name_vpath;
+
+        local_name_vpath = vfs_path_from_str (archive->local_name);
+        name_vpath = vfs_path_from_str (archive->local_name);
         mc_stat (local_name_vpath, &my);
         mc_ungetlocalcopy (name_vpath, local_name_vpath,
                            archive->local_stat.st_mtime != my.st_mtime);
@@ -423,8 +425,8 @@ extfs_open_archive (int fstype, const char *name, struct archive **pparc)
     }
 
     cmd = g_strconcat (info->path, info->prefix, " list ",
-                       vfs_path_get_last_path_str (local_name_vpath) !=
-                       NULL ? vfs_path_get_last_path_str (local_name_vpath) : tmp, (char *) NULL);
+                       vfs_path_get_last_path_str (local_name_vpath) != NULL ?
+                       vfs_path_get_last_path_str (local_name_vpath) : tmp, (char *) NULL);
     g_free (tmp);
 
     open_error_pipe ();
@@ -435,7 +437,7 @@ extfs_open_archive (int fstype, const char *name, struct archive **pparc)
         close_error_pipe (D_ERROR, NULL);
         if (local_name_vpath != NULL)
         {
-            mc_ungetlocalcopy (name_vpath, local_name_vpath, 0);
+            mc_ungetlocalcopy (name_vpath, local_name_vpath, FALSE);
             vfs_path_free (local_name_vpath);
         }
         goto ret;
@@ -1525,7 +1527,7 @@ extfs_getlocalcopy (const vfs_path_t * vpath)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-extfs_ungetlocalcopy (const vfs_path_t * vpath, const vfs_path_t * local, int has_changed)
+extfs_ungetlocalcopy (const vfs_path_t * vpath, const vfs_path_t * local, gboolean has_changed)
 {
     struct pseudofile *fp;
 
@@ -1536,7 +1538,7 @@ extfs_ungetlocalcopy (const vfs_path_t * vpath, const vfs_path_t * local, int ha
     if (strcmp (fp->entry->inode->local_filename, vfs_path_get_last_path_str (local)) == 0)
     {
         fp->archive->fd_usage--;
-        if (has_changed != 0)
+        if (has_changed)
             fp->has_changed = TRUE;
         extfs_close ((void *) fp);
         return 0;

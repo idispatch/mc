@@ -3400,14 +3400,18 @@ dview_diff_cmd (void)
             struct stat st1;
             vfs_path_t *real_file0;
             vfs_path_t *real_file1;
+
             GET_FILE_AND_STAMP (0);
             GET_FILE_AND_STAMP (1);
             if (real_file0 != NULL && real_file1 != NULL)
             {
-                char *real_file0_str = vfs_path_to_str (real_file0);
-                char *real_file1_str = vfs_path_to_str (real_file1);
-                char *file0_str = vfs_path_to_str (file0);
-                char *file1_str = vfs_path_to_str (file1);
+                char *real_file0_str, *real_file1_str;
+                char *file0_str, *file1_str;
+
+                real_file0_str = vfs_path_to_str (real_file0);
+                real_file1_str = vfs_path_to_str (real_file1);
+                file0_str = vfs_path_to_str (file0);
+                file1_str = vfs_path_to_str (file1);
                 rv = diff_view (real_file0_str, real_file1_str, file0_str, file1_str);
                 g_free (real_file0_str);
                 g_free (real_file1_str);

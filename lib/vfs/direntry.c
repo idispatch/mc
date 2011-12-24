@@ -774,7 +774,7 @@ vfs_s_getlocalcopy (const vfs_path_t * vpath)
  */
 
 static int
-vfs_s_ungetlocalcopy (const vfs_path_t * vpath, const vfs_path_t * local, int has_changed)
+vfs_s_ungetlocalcopy (const vfs_path_t * vpath, const vfs_path_t * local, gboolean has_changed)
 {
     (void) vpath;
     (void) local;

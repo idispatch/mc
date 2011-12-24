@@ -138,14 +138,14 @@ sfs_vfmake (const vfs_path_t * vpath, vfs_path_t * cache_vpath)
     if (w == -1)
         vfs_die ("This cannot happen... Hopefully.\n");
 
-    if (!(sfs_flags[w] & F_1) && strcmp (vfs_path_get_last_path_str (pname), "/"))
+    if ((sfs_flags[w] & F_1) == 0 && strcmp (vfs_path_get_last_path_str (pname), PATH_SEP_STR) != 0)
     {
         vfs_path_free (pname);
         return -1;
     }
 
     /*    if ((sfs_flags[w] & F_2) || (!inpath) || (!*inpath)); else return -1; */
-    if (!(sfs_flags[w] & F_NOLOCALCOPY))
+    if ((sfs_flags[w] & F_NOLOCALCOPY) == 0)
     {
         s = mc_getlocalcopy (pname);
         if (s == NULL)
@@ -158,7 +158,9 @@ sfs_vfmake (const vfs_path_t * vpath, vfs_path_t * cache_vpath)
     }
     else
     {
-        char *pname_str = vfs_path_to_str (pname);
+        char *pname_str;
+
+        pname_str = vfs_path_to_str (pname);
         pqname = name_quote (pname_str, 0);
         g_free (pname_str);
     }
@@ -169,8 +171,8 @@ sfs_vfmake (const vfs_path_t * vpath, vfs_path_t * cache_vpath)
     {
         if (was_percent)
         {
-
             const char *ptr = NULL;
+
             was_percent = 0;
 
             switch (*s_iter)
@@ -405,7 +407,7 @@ sfs_getlocalcopy (const vfs_path_t * vpath)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-sfs_ungetlocalcopy (const vfs_path_t * vpath, const vfs_path_t * local, int has_changed)
+sfs_ungetlocalcopy (const vfs_path_t * vpath, const vfs_path_t * local, gboolean has_changed)
 {
     (void) vpath;
     (void) local;

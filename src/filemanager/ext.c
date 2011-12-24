@@ -157,7 +157,7 @@ exec_extension (const char *filename, const char *lc_data, int *move_dir, int st
                     mc_unlink (file_name_vpath);
                     if (localcopy_vpath != NULL)
                     {
-                        mc_ungetlocalcopy (vpath, localcopy_vpath, 0);
+                        mc_ungetlocalcopy (vpath, localcopy_vpath, FALSE);
                         vfs_path_free (localcopy_vpath);
                     }
                     goto ret;
@@ -501,15 +501,15 @@ regex_check_type (const char *filename, const char *ptr, int *have_type)
     static char encoding_id[21];        /* CSISO51INISCYRILLIC -- 20 */
     static size_t content_shift = 0;
     static int got_data = 0;
-    vfs_path_t *filename_vpath = vfs_path_from_str (filename);
 
     if (!use_file_to_check_type)
         return 0;
 
     if (*have_type == 0)
     {
-        char *realname;         /* name used with "file" */
+        vfs_path_t *filename_vpath;
         vfs_path_t *localfile_vpath;
+        char *realname;         /* name used with "file" */
 
 #ifdef HAVE_CHARSET
         int got_encoding_data;
@@ -518,9 +518,13 @@ regex_check_type (const char *filename, const char *ptr, int *have_type)
         /* Don't repeate even unsuccessful checks */
         *have_type = 1;
 
+        filename_vpath = vfs_path_from_str (filename);
         localfile_vpath = mc_getlocalcopy (filename_vpath);
         if (localfile_vpath == NULL)
+        {
+            vfs_path_free (filename_vpath);
             return -1;
+        }
 
         realname = vfs_path_get_last_path_str (localfile_vpath);
 
@@ -546,7 +550,8 @@ regex_check_type (const char *filename, const char *ptr, int *have_type)
         }
 #endif /* HAVE_CHARSET */
 
-        mc_ungetlocalcopy (filename_vpath, localfile_vpath, 0);
+        mc_ungetlocalcopy (filename_vpath, localfile_vpath, FALSE);
+        vfs_path_free (filename_vpath);
 
         got_data =
             get_file_type_local (vfs_path_get_last_path_str (localfile_vpath), content_string,
