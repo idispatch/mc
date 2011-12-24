@@ -1162,9 +1162,10 @@ vfs_path_tokens_count (const vfs_path_t * vpath)
 
     for (element_index = 0; element_index < vfs_path_elements_count (vpath); element_index++)
     {
-        vfs_path_element_t *element = vfs_path_get_by_index (vpath, element_index);
+        vfs_path_element_t *element;
         char **path_tokens, **iterator;
 
+        element = vfs_path_get_by_index (vpath, element_index);
         path_tokens = iterator = g_strsplit (element->path, PATH_SEP_STR, -1);
 
         while (*iterator != NULL)
@@ -1212,15 +1213,16 @@ vfs_path_tokens_get (const vfs_path_t * vpath, ssize_t start_position, size_t le
     if (start_position + (ssize_t) length > (ssize_t) tokens_count)
         length = tokens_count - start_position;
 
-    ret_tokens = g_string_new ("");
-    element_tokens = g_string_new ("");
+    ret_tokens = g_string_sized_new (32);
+    element_tokens = g_string_sized_new (32);
 
     for (element_index = 0; element_index < vfs_path_elements_count (vpath); element_index++)
     {
-        vfs_path_element_t *element = vfs_path_get_by_index (vpath, element_index);
+        vfs_path_element_t *element;
         char **path_tokens, **iterator;
-        g_string_assign (element_tokens, "");
 
+        g_string_assign (element_tokens, "");
+        element = vfs_path_get_by_index (vpath, element_index);
         path_tokens = iterator = g_strsplit (element->path, PATH_SEP_STR, -1);
 
         while (*iterator != NULL)
@@ -1249,15 +1251,9 @@ vfs_path_tokens_get (const vfs_path_t * vpath, ssize_t start_position, size_t le
         g_strfreev (path_tokens);
         vfs_path_tokens_add_class_info (element, ret_tokens, element_tokens);
     }
-    if (start_position == 0 && length == 0)
-    {
-        g_string_free (element_tokens, TRUE);
-        return g_string_free (ret_tokens, FALSE);
-    }
 
     g_string_free (element_tokens, TRUE);
-    g_string_free (ret_tokens, TRUE);
-    return NULL;
+    return g_string_free (ret_tokens, !(start_position == 0 && length == 0));
 }
 
 /* --------------------------------------------------------------------------------------------- */
