@@ -279,11 +279,15 @@ tree_store_load_from (char *name)
                     different = strtok (NULL, "");
                     if (different)
                     {
-                        vfs_path_t *vpath = vfs_path_from_str (oldname);
+                        vfs_path_t *vpath;
+
+                        vpath = vfs_path_from_str (oldname);
                         strcpy (oldname + common, different);
                         if (vfs_file_is_local (vpath))
                         {
-                            vfs_path_t *tmp_vpath = vfs_path_from_str (oldname);
+                            vfs_path_t *tmp_vpath;
+
+                            tmp_vpath = vfs_path_from_str (oldname);
                             e = tree_store_add_entry (tmp_vpath);
                             vfs_path_free (tmp_vpath);
                             e->scanned = scanned;
@@ -294,7 +298,9 @@ tree_store_load_from (char *name)
             }
             else
             {
-                vfs_path_t *vpath = vfs_path_from_str (lc_name);
+                vfs_path_t *vpath;
+
+                vpath = vfs_path_from_str (lc_name);
                 if (vfs_file_is_local (vpath))
                 {
                     e = tree_store_add_entry (vpath);
@@ -453,7 +459,9 @@ tree_store_add_entry (const vfs_path_t * name)
     new->name = vfs_path_clone (name);
     new->sublevel = vfs_path_tokens_count (new->name) + 1;
     {
-        const char *new_name = vfs_path_get_last_path_str (new->name);
+        const char *new_name;
+
+        new_name = vfs_path_get_last_path_str (new->name);
         new->subname = strrchr (new_name, '/');
         if (new->subname == NULL)
             new->subname = new_name;
@@ -480,7 +488,9 @@ tree_store_add_entry (const vfs_path_t * name)
     if (new->sublevel > 1)
     {
         /* Let's check if the parent directory is in the tree */
-        vfs_path_t *tmp_vpath = vfs_path_vtokens_get (new->name, 0, new->sublevel - 1);
+        vfs_path_t *tmp_vpath;
+
+        tmp_vpath = vfs_path_vtokens_get (new->name, 0, new->sublevel - 1);
         tree_store_add_entry (tmp_vpath);
         vfs_path_free (tmp_vpath);
     }
@@ -580,7 +590,8 @@ should_skip_directory (const vfs_path_t * vpath)
     static GList *special_dirs = NULL;
     GList *l;
     static gboolean loaded = FALSE;
-    char *dir = vfs_path_to_str (vpath);
+    char *dir;
+    gboolean ret = FALSE;
 
     if (!loaded)
     {
@@ -590,15 +601,16 @@ should_skip_directory (const vfs_path_t * vpath)
         process_special_dirs (&special_dirs, global_profile_name);
     }
 
+    dir = vfs_path_to_str (vpath);
     for (l = special_dirs; l != NULL; l = g_list_next (l))
         if (strncmp (dir, l->data, strlen (l->data)) == 0)
         {
-            g_free (dir);
-            return TRUE;
+            ret = TRUE;
+            break;
         }
 
     g_free (dir);
-    return FALSE;
+    return ret;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -701,19 +713,20 @@ void
 tree_store_remove_entry (const vfs_path_t * name_vpath)
 {
     tree_entry *current, *base, *old;
-    int len;
+    size_t len;
 
     g_return_if_fail (name_vpath != NULL);
 
     /* Miguel Ugly hack */
     {
-        char *name = vfs_path_to_str (name_vpath);
-        if (name[0] == PATH_SEP && name[1] == 0)
-        {
-            g_free (name);
-            return;
-        }
+        char *name;
+        gboolean is_root;
+
+        name = vfs_path_to_str (name_vpath);
+        is_root = (name[0] == PATH_SEP && name[1] == '\0');
         g_free (name);
+        if (is_root)
+            return;
     }
     /* Miguel Ugly hack end */
 
@@ -725,21 +738,20 @@ tree_store_remove_entry (const vfs_path_t * name_vpath)
     current = base->next;
     while (current != NULL && vfs_path_ncmp (current->name, base->name, len) == 0)
     {
-        char *current_name = vfs_path_to_str (current->name);
-        if (!(current_name[len] == '\0' || current_name[len] == PATH_SEP))
-        {
-            g_free (current_name);
-            break;
-        }
+        char *current_name;
+        gboolean ok;
+
+        current_name = vfs_path_to_str (current->name);
+        ok = (current_name[len] == '\0' || current_name[len] == PATH_SEP);
         g_free (current_name);
+        if (!ok)
+            break;
         old = current;
         current = current->next;
         remove_entry (old);
     }
     remove_entry (base);
     tree_store_dirty (TRUE);
-
-    return;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -751,7 +763,7 @@ tree_store_mark_checked (const char *subname)
     vfs_path_t *name;
     char *check_name;
     tree_entry *current, *base;
-    int flag = 1, len;
+    int flag = 1;
     if (!ts.loaded)
         return;
 
@@ -786,17 +798,20 @@ tree_store_mark_checked (const char *subname)
     base = current;
     if (base)
     {
+        size_t len;
+
         len = vfs_path_len (base->name);
         base->mark = 0;
         current = base->next;
         while (current != NULL && vfs_path_ncmp (current->name, base->name, len) == 0)
         {
+            gboolean ok;
+
             check_name = vfs_path_to_str (current->name);
-            if (!(check_name[len] == '\0' || check_name[len] == PATH_SEP || len == 1))
-            {
-                g_free (check_name);
+            ok = (check_name[len] == '\0' || check_name[len] == PATH_SEP || len == 1);
+            g_free (check_name);
+            if (!ok)
                 break;
-            }
             g_free (check_name);
             current->mark = 0;
             current = current->next;
@@ -848,15 +863,14 @@ tree_store_start_check (const vfs_path_t * vpath)
     current = ts.check_start;
     while (current != NULL && vfs_path_cmp (current->name, ts.check_name) == 0)
     {
-        char *current_name = vfs_path_to_str (current->name);
+        char *current_name;
+        gboolean ok;
 
-        if (!(current_name[len] == '\0' || (current_name[len] == PATH_SEP || len == 1)))
-        {
-            g_free (current_name);
-            break;
-        }
+        current_name = vfs_path_to_str (current->name);
+        ok = (current_name[len] == '\0' || (current_name[len] == PATH_SEP || len == 1));
         g_free (current_name);
-
+        if (!ok)
+            break;
         current->mark = 1;
         current = current->next;
     }
@@ -885,13 +899,15 @@ tree_store_end_check (void)
     current = ts.check_start;
     while (current != NULL && vfs_path_ncmp (current->name, ts.check_name, len) == 0)
     {
-        char *current_name = vfs_path_to_str (current->name);
-        if (!(current_name[len] == '\0' || current_name[len] == PATH_SEP || len == 1))
-        {
-            g_free (current_name);
-            break;
-        }
+        char *current_name;
+        gboolean ok;
+
+        current_name = vfs_path_to_str (current->name);
+        ok = (current_name[len] == '\0' || current_name[len] == PATH_SEP || len == 1);
         g_free (current_name);
+
+        if (!ok)
+            break;
         old = current;
         current = current->next;
         if (old->mark)
@@ -927,8 +943,7 @@ tree_store_rescan (const vfs_path_t * vpath)
     }
 
     entry = tree_store_start_check (vpath);
-
-    if (!entry)
+    if (entry == NULL)
         return NULL;
 
     dirp = mc_opendir (vpath);

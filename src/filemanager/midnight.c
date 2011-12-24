@@ -753,6 +753,7 @@ put_prog_name (void)
     if (get_current_type () == view_tree)
     {
         WTree *tree = (WTree *) get_panel_widget (get_current_index ());
+
         tmp = vfs_path_to_str (tree_selected_name (tree));
     }
     else

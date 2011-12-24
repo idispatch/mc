@@ -55,7 +55,6 @@
 #include "lib/widget.h"
 #include "lib/event.h"          /* mc_event_raise() */
 
-
 #include "src/setup.h"          /* confirm_delete, panels_options */
 #include "src/keybind-defaults.h"
 #include "src/history.h"
@@ -251,6 +250,7 @@ tree_show_mini_info (WTree * tree, int tree_lines, int tree_cols)
     {
         /* Show full name of selected directory */
         char *tmp_path;
+
         tty_setcolor (tree->is_panel ? NORMAL_COLOR : TREE_NORMALC (h));
         tty_draw_hline (tree->widget.y + line, tree->widget.x + 1, ' ', tree_cols);
         widget_move (&tree->widget, line, 1);
@@ -356,7 +356,9 @@ show_tree (WTree * tree)
         if (current->sublevel == topsublevel)
         {
             /* Show full name */
-            char *current_name = vfs_path_to_str (current->name);
+            char *current_name;
+
+            current_name = vfs_path_to_str (current->name);
             tty_print_string (str_fit_to_term
                               (current_name, tree_cols + (tree->is_panel ? 0 : 1), J_LEFT_FIT));
             g_free (current_name);
@@ -407,8 +409,11 @@ show_tree (WTree * tree)
                 }
                 else if (current->sublevel == tree->selected_ptr->sublevel)
                 {
-                    char *current_name = vfs_path_to_str (current->name);
-                    for (j = strlen (current_name) - 1; current_name[j] != PATH_SEP; j--);
+                    char *current_name;
+
+                    current_name = vfs_path_to_str (current->name);
+                    for (j = strlen (current_name) - 1; current_name[j] != PATH_SEP; j--)
+                        ;
                     g_free (current_name);
                     if (vfs_path_ncmp (current->name, tree->selected_ptr->name, j) == 0)
                         break;
@@ -594,6 +599,7 @@ static void
 tree_chdir_sel (WTree * tree)
 {
     char *tmp_path;
+
     if (!tree->is_panel)
         return;
 
@@ -737,7 +743,7 @@ tree_rescan (void *data)
     if (old_vpath == NULL)
         return;
 
-    if (tree->selected_ptr != NULL && (mc_chdir (tree->selected_ptr->name) == 0)
+    if (tree->selected_ptr != NULL && mc_chdir (tree->selected_ptr->name) == 0)
     {
         tree_store_rescan (tree->selected_ptr->name);
         ret = mc_chdir (old_vpath);
@@ -814,27 +820,19 @@ tree_move (WTree * tree, const char *default_dest)
         input_expand_dialog (Q_ ("DialogTitle|Move"), msg, MC_HISTORY_FM_TREE_MOVE, default_dest);
 
     if (dest == NULL || *dest == '\0')
-    {
-        g_free (dest);
-        g_free (selected_ptr_name);
-        return;
-    }
+        goto ret;
 
     if (stat (dest, &buf))
     {
         message (D_ERROR, MSG_ERROR, _("Cannot stat the destination\n%s"),
                  unix_error_string (errno));
-        g_free (dest);
-        g_free (selected_ptr_name);
-        return;
+        goto ret;
     }
 
     if (!S_ISDIR (buf.st_mode))
     {
         file_error (_("Destination \"%s\" must be a directory\n%s"), dest);
-        g_free (dest);
-        g_free (selected_ptr_name);
-        return;
+        goto ret;
     }
 
     ctx = file_op_context_new (OP_MOVE);
@@ -844,6 +842,7 @@ tree_move (WTree * tree, const char *default_dest)
     file_op_total_context_destroy (tctx);
     file_op_context_destroy (ctx);
 
+  ret:
     g_free (selected_ptr_name);
     g_free (dest);
 }
@@ -892,7 +891,10 @@ tree_rmdir (void *data)
         result = query_dialog (Q_ ("DialogTitle|Delete"), buf, D_ERROR, 2, _("&Yes"), _("&No"));
         g_free (buf);
         if (result != 0)
+        {
+            g_free (selected_ptr_name);
             return;
+        }
     }
 
     ctx = file_op_context_new (OP_DELETE);
@@ -1294,11 +1296,11 @@ tree_new (int y, int x, int lines, int cols, gboolean is_panel)
 void
 tree_chdir (WTree * tree, const char *dir)
 {
+    vfs_path_t *vpath;
     tree_entry *current;
-    vfs_path_t *vpath = vfs_path_from_str (dir);
 
+    vpath = vfs_path_from_str (dir);
     current = tree_store_whereis (vpath);
-
     if (current != NULL)
     {
         tree->selected_ptr = current;

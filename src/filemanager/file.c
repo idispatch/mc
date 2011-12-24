@@ -1178,6 +1178,7 @@ panel_get_file (WPanel * panel, struct stat *stat_buf)
     if (get_current_type () == view_tree)
     {
         WTree *tree = (WTree *) get_panel_widget (get_current_index ());
+
         mc_stat (tree_selected_name (tree), stat_buf);
         return vfs_path_to_str (tree_selected_name (tree));
     }
