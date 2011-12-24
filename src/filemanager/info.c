@@ -120,10 +120,13 @@ info_show_info (struct WInfo *info)
         return;
 
     {
-        char *cwd_str = vfs_path_to_str (current_panel->cwd_vpath);
+        char *cwd_str;
+
+        cwd_str = vfs_path_to_str (current_panel->cwd_vpath);
         my_statfs (&myfs_stats, cwd_str);
         g_free (cwd_str);
     }
+
     st = current_panel->dir.list[current_panel->selected].st;
 
     /* Print only lines which fit */

@@ -261,7 +261,9 @@ test_condition (WEdit * edit_widget, char *p, int *condition)
         case 'd':
             p = extract_arg (p, arg, sizeof (arg));
             {
-                char *cwd_str = vfs_path_to_str (panel->cwd_vpath);
+                char *cwd_str;
+
+                cwd_str = vfs_path_to_str (panel->cwd_vpath);
                 *condition = panel != NULL && mc_search (arg, cwd_str, search_type) ? 1 : 0;
                 g_free (cwd_str);
             }

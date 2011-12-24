@@ -427,6 +427,7 @@ make_symlink (FileOpContext * ctx, const char *src_path, const char *dst_path)
             if (vfs_path_tokens_count (q) > 1)
             {
                 vfs_path_t *tmp_vpath1, *tmp_vpath2;
+
                 tmp_vpath1 = vfs_path_vtokens_get (q, -1, 1);
                 s = g_strconcat (p, link_target, (char *) NULL);
                 g_free (p);
@@ -2062,7 +2063,7 @@ copy_dir_dir (FileOpTotalContext * tctx, FileOpContext * ctx, const char *s, con
         }
     }
     dest_dir_vpath = vfs_path_from_str (dest_dir);
-    while (my_mkdir (dest_dir_vpath, (cbuf.st_mode & ctx->umask_kill) | S_IRWXU))
+    while (my_mkdir (dest_dir_vpath, (cbuf.st_mode & ctx->umask_kill) | S_IRWXU) != 0)
     {
         if (ctx->skip_all)
             return_status = FILE_SKIPALL;
@@ -2463,7 +2464,6 @@ compute_dir_size_update_ui (const void *ui, const vfs_path_t * dirname_vpath)
         return FILE_CONT;
 
     dirname = vfs_path_to_str (dirname_vpath);
-
     label_set_text (this->dirname, str_trunc (dirname, this->dlg->cols - 6));
     g_free (dirname);
 
@@ -2542,35 +2542,33 @@ compute_dir_size (vfs_path_t * dirname_vpath, const void *ui,
 
         tmp_vpath = vfs_path_append_new (dirname_vpath, dirent->d_name, NULL);
         res = mc_lstat (tmp_vpath, &s);
-
-        if (res != 0)
+        if (res == 0)
         {
-            vfs_path_free (tmp_vpath);
-            continue;
+            if (S_ISDIR (s.st_mode))
+            {
+                size_t subdir_count = 0;
+                uintmax_t subdir_bytes = 0;
+
+                ret =
+                    compute_dir_size (tmp_vpath, ui, cback, &subdir_count, &subdir_bytes,
+                                      compute_symlinks);
+
+                if (ret != FILE_CONT)
+                {
+                    vfs_path_free (tmp_vpath);
+                    break;
+                }
+
+                *ret_marked += subdir_count;
+                *ret_total += subdir_bytes;
+            }
+            else
+            {
+                (*ret_marked)++;
+                *ret_total += (uintmax_t) s.st_size;
+            }
         }
-
-        if (S_ISDIR (s.st_mode))
-        {
-            size_t subdir_count = 0;
-            uintmax_t subdir_bytes = 0;
-
-            ret =
-                compute_dir_size (tmp_vpath, ui, cback, &subdir_count, &subdir_bytes,
-                                  compute_symlinks);
-
-            if (ret != FILE_CONT)
-                break;
-
-            *ret_marked += subdir_count;
-            *ret_total += subdir_bytes;
-        }
-        else
-        {
-            (*ret_marked)++;
-            *ret_total += (uintmax_t) s.st_size;
-            vfs_path_free (tmp_vpath);
-        }
-
+        vfs_path_free (tmp_vpath);
     }
 
     mc_closedir (dir);
@@ -2778,7 +2776,9 @@ panel_operate (void *source_panel, FileOperation operation, gboolean force_singl
     if (do_bg)
     {
         int v;
-        char *cwd_str = vfs_path_to_str (panel->cwd_vpath);
+        char *cwd_str;
+
+        cwd_str = vfs_path_to_str (panel->cwd_vpath);
         v = do_background (ctx, g_strconcat (op_names[operation], ": ", cwd_str, (char *) NULL));
         g_free (cwd_str);
         if (v == -1)

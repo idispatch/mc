@@ -321,7 +321,9 @@ remove_from_panelize (struct panelize *entry)
 static void
 panelize_strlcpy (char *buffer, const vfs_path_t * vpath, size_t max_len)
 {
-    char *str_path = vfs_path_to_str (vpath);
+    char *str_path;
+
+    str_path = vfs_path_to_str (vpath);
     g_strlcpy (buffer, str_path, max_len);
     g_free (str_path);
 }
@@ -440,7 +442,9 @@ do_panelize_cd (struct WPanel *panel)
     panel->is_panelized = TRUE;
 
     {
-        char *cwd_str = vfs_path_to_str (panel->cwd_vpath);
+        char *cwd_str;
+
+        cwd_str = vfs_path_to_str (panel->cwd_vpath);
         panelized_same = (strcmp (panelized_panel.root, cwd_str) == 0);
         g_free (cwd_str);
     }

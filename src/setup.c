@@ -765,8 +765,9 @@ save_panel_types (void)
         panel_save_setup (right_panel, right_panel->panel_name);
 
     {
-        char *dirs = get_panel_dir_for (other_panel);
+        char *dirs;
 
+        dirs = get_panel_dir_for (other_panel);
         mc_config_set_string (mc_panels_config, "Dirs", "other_dir", dirs);
         g_free (dirs);
     }

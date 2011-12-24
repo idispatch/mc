@@ -672,19 +672,23 @@ find_parameters (char **start_dir, ssize_t * start_dir_len,
 
     case B_TREE:
         {
-            char *temp_dir = g_strdup (in_start->buffer);
+            char *temp_dir;
 
+            temp_dir = in_start->buffer;
             if ((temp_dir[0] == '\0') || ((temp_dir[0] == '.') && (temp_dir[1] == '\0')))
                 temp_dir = vfs_path_to_str (current_panel->cwd_vpath);
+            else
+                temp_dir = g_strdup (temp_dir);
 
             if (in_start_dir != INPUT_LAST_TEXT)
                 g_free (in_start_dir);
             in_start_dir = tree_box (temp_dir);
             if (in_start_dir == NULL)
-                in_start_dir = g_strdup (temp_dir);
+                in_start_dir = temp_dir;
+            else
+                g_free (temp_dir);
 
             input_assign_text (in_start, in_start_dir);
-            g_free (temp_dir);
 
             /* Warning: Dreadful goto */
             goto find_par_start;
@@ -738,7 +742,9 @@ find_parameters (char **start_dir, ssize_t * start_dir_len,
             else
             {
                 /* relative paths will be used in panelization */
-                char *cwd_str = vfs_path_to_str (current_panel->cwd_vpath);
+                char *cwd_str;
+
+                cwd_str = vfs_path_to_str (current_panel->cwd_vpath);
                 *start_dir = mc_build_filename (cwd_str, s, (char *) NULL);
                 *start_dir_len = (ssize_t) strlen (cwd_str);
                 g_free (cwd_str);

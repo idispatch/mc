@@ -1046,6 +1046,7 @@ symlink_dialog (const vfs_path_t * existing_vpath, const vfs_path_t * new_vpath,
 {
     char *existing = vfs_path_to_str (existing_vpath);
     char *new = vfs_path_to_str (new_vpath);
+
     QuickWidget quick_widgets[] = {
         /* 0 */ QUICK_BUTTON (50, 80, 6, 8, N_("&Cancel"), B_CANCEL, NULL),
         /* 1 */ QUICK_BUTTON (16, 80, 6, 8, N_("&OK"), B_ENTER, NULL),

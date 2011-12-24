@@ -1697,11 +1697,16 @@ void
 add2hotlist_cmd (void)
 {
     char *lc_prompt, *label;
-    const char *cp = _("Label for \"%s\":");
-    int l = str_term_width1 (cp);
-    char *label_string = vfs_path_to_str (current_panel->cwd_vpath);
+    const char *cp = N_("Label for \"%s\":");
+    int l;
+    char *label_string;
 
+#ifdef ENABLE_NLS
+    cp = _(cp);
+#endif
 
+    l = str_term_width1 (cp);
+    label_string = vfs_path_to_str (current_panel->cwd_vpath);
     lc_prompt = g_strdup_printf (cp, path_trunc (label_string, COLS - 2 * UX - (l + 8)));
     strip_password (label_string, 1);
     label = input_dialog (_("Add to hotlist"), lc_prompt, MC_HISTORY_HOTLIST_ADD, label_string);

@@ -1108,7 +1108,9 @@ show_dir (WPanel * panel)
         tty_printf (" %s ", _("Panelize"));
     else
     {
-        char *tmp_path = vfs_path_to_str (panel->cwd_vpath);
+        char *tmp_path;
+
+        tmp_path = vfs_path_to_str (panel->cwd_vpath);
         tty_printf (" %s ",
                     str_term_trim (strip_home_and_password (tmp_path),
                                    min (max (panel->widget.cols - 12, 0), panel->widget.cols)));
@@ -1192,7 +1194,9 @@ panel_load_history (const gchar * event_group_name, const gchar * event_name,
 
     if (ev->receiver == NULL || ev->receiver == (Widget *) p)
     {
-        char *tmp_path = vfs_path_to_str (p->cwd_vpath);
+        char *tmp_path;
+
+        tmp_path = vfs_path_to_str (p->cwd_vpath);
         if (ev->cfg != NULL)
             p->dir_history = history_load (ev->cfg, p->hist_name);
         else
@@ -2327,7 +2331,9 @@ do_enter_on_file_entry (file_entry * fe)
 
     /* Check if the file is executable */
     {
-        char *tmp_path = vfs_path_to_str (current_panel->cwd_vpath);
+        char *tmp_path;
+
+        tmp_path = vfs_path_to_str (current_panel->cwd_vpath);
         full_name = concat_dir_and_file (tmp_path, fe->fname);
         g_free (tmp_path);
     }
@@ -2391,13 +2397,14 @@ chdir_other_panel (WPanel * panel)
 
     char *new_dir;
     char *sel_entry = NULL;
-    char *tmp_path = vfs_path_to_str (panel->cwd_vpath);
+    char *tmp_path;
 
     if (get_other_type () != view_listing)
     {
         set_display_type (get_other_index (), view_listing);
     }
 
+    tmp_path = vfs_path_to_str (panel->cwd_vpath);
     if (S_ISDIR (entry->st.st_mode) || entry->f.link_to_dir)
         new_dir = mc_build_filename (tmp_path, entry->fname, (char *) NULL);
     else
@@ -2435,7 +2442,9 @@ panel_sync_other (const WPanel * panel)
     }
 
     {
-        char *tmp_path = vfs_path_to_str (current_panel->cwd_vpath);
+        char *tmp_path;
+
+        tmp_path = vfs_path_to_str (current_panel->cwd_vpath);
         do_panel_cd (other_panel, tmp_path, cd_exact);
         g_free (tmp_path);
     }
@@ -2493,7 +2502,9 @@ chdir_to_readlink (WPanel * panel)
             new_dir = g_strdup (buffer);
         else
         {
-            char *tmp_path = vfs_path_to_str (panel->cwd_vpath);
+            char *tmp_path;
+
+            tmp_path = vfs_path_to_str (panel->cwd_vpath);
             new_dir = concat_dir_and_file (tmp_path, buffer);
             g_free (tmp_path);
         }
@@ -2754,9 +2765,11 @@ _do_panel_cd (WPanel * panel, const char *new_dir, enum cd_enum cd_type)
 
     if (cd_type == cd_parse_command)
     {
-        if (!strcmp (new_dir, "-"))
+        if (strcmp (new_dir, "-") == 0)
         {
-            char *tmp_path = vfs_path_to_str (panel->lwd_vpath);
+            char *tmp_path;
+
+            tmp_path = vfs_path_to_str (panel->lwd_vpath);
             strcpy (temp, tmp_path);
             new_dir = temp;
             g_free (tmp_path);
@@ -2788,7 +2801,9 @@ _do_panel_cd (WPanel * panel, const char *new_dir, enum cd_enum cd_type)
     /* Reload current panel */
     panel_clean_dir (panel);
     {
-        char *tmp_path = vfs_path_to_str (panel->cwd_vpath);
+        char *tmp_path;
+
+        tmp_path = vfs_path_to_str (panel->cwd_vpath);
         panel->count =
             do_load_dir (tmp_path, &panel->dir, panel->sort_info.sort_field->sort_routine,
                          panel->sort_info.reverse, panel->sort_info.case_sensitive,
@@ -2844,7 +2859,9 @@ directory_history_list (WPanel * panel)
     {
         if (_do_panel_cd (panel, s, cd_exact))
         {
-            char *tmp_path = vfs_path_to_str (panel->cwd_vpath);
+            char *tmp_path;
+
+            tmp_path = vfs_path_to_str (panel->cwd_vpath);
             directory_history_add (panel, tmp_path);
             g_free (tmp_path);
         }
@@ -3093,7 +3110,9 @@ panel_callback (Widget * w, widget_msg_t msg, int parm)
         panel->active = 1;
         if (mc_chdir (panel->cwd_vpath) != 0)
         {
-            char *cwd = strip_password (vfs_path_to_str (panel->cwd_vpath), 1);
+            char *cwd;
+
+            cwd = strip_password (vfs_path_to_str (panel->cwd_vpath), 1);
             message (D_ERROR, MSG_ERROR, _("Cannot chdir to \"%s\"\n%s"),
                      cwd, unix_error_string (errno));
             g_free (cwd);
@@ -3503,12 +3522,13 @@ remove_encoding_from_path (const vfs_path_t * vpath)
 
     for (indx = 0; indx < vfs_path_elements_count (vpath); indx++)
     {
+        vfs_path_element_t *path_element;
         GIConv converter;
-        vfs_path_element_t *path_element = vfs_path_get_by_index (vpath, indx);
 
+        path_element = vfs_path_get_by_index (vpath, indx);
         converter =
-            path_element->encoding !=
-            NULL ? str_crt_conv_to (path_element->encoding) : str_cnv_to_term;
+            path_element->encoding != NULL ?
+            str_crt_conv_to (path_element->encoding) : str_cnv_to_term;
         if (converter == INVALID_CONV)
             converter = str_cnv_to_term;
 
@@ -3792,8 +3812,9 @@ panel_new_with_dir (const char *panel_name, const char *wpath)
 
 #ifdef HAVE_CHARSET
     {
-        vfs_path_element_t *path_element = vfs_path_get_by_index (panel->cwd_vpath, -1);
+        vfs_path_element_t *path_element;
 
+        path_element = vfs_path_get_by_index (panel->cwd_vpath, -1);
         if (path_element->encoding != NULL)
             panel->codepage = get_codepage_index (path_element->encoding);
     }
@@ -3809,7 +3830,9 @@ panel_new_with_dir (const char *panel_name, const char *wpath)
 
     /* Load the default format */
     {
-        char *tmp_path = vfs_path_to_str (panel->cwd_vpath);
+        char *tmp_path;
+
+        tmp_path = vfs_path_to_str (panel->cwd_vpath);
         panel->count =
             do_load_dir (tmp_path, &panel->dir, panel->sort_info.sort_field->sort_routine,
                          panel->sort_info.reverse, panel->sort_info.case_sensitive,
@@ -3837,16 +3860,17 @@ void
 panel_reload (WPanel * panel)
 {
     struct stat current_stat;
-    char *tmp_path = vfs_path_to_str (panel->cwd_vpath);
+    char *tmp_path;
+    gboolean ok;
 
-    if (panels_options.fast_reload && !stat (tmp_path, &current_stat)
-        && current_stat.st_ctime == panel->dir_stat.st_ctime
-        && current_stat.st_mtime == panel->dir_stat.st_mtime)
-    {
-        g_free (tmp_path);
-        return;
-    }
+    tmp_path = vfs_path_to_str (panel->cwd_vpath);
+    ok = (panels_options.fast_reload && stat (tmp_path, &current_stat) == 0
+            && current_stat.st_ctime == panel->dir_stat.st_ctime
+            && current_stat.st_mtime == panel->dir_stat.st_mtime);
     g_free (tmp_path);
+
+    if (ok)
+        return;
 
     do
     {
@@ -4128,7 +4152,9 @@ do_panel_cd (struct WPanel *panel, const char *new_dir, enum cd_enum cd_type)
     r = _do_panel_cd (panel, new_dir, cd_type);
     if (r)
     {
-        char *tmp_path = vfs_path_to_str (panel->cwd_vpath);
+        char *tmp_path;
+
+        tmp_path = vfs_path_to_str (panel->cwd_vpath);
         directory_history_add (panel, tmp_path);
         g_free (tmp_path);
     }

@@ -878,14 +878,18 @@ done_mc (void)
 
     if ((current_panel != NULL) && (get_current_type () == view_listing))
     {
-        char *tmp_path = vfs_path_to_str (current_panel->cwd_vpath);
+        char *tmp_path;
+
+        tmp_path = vfs_path_to_str (current_panel->cwd_vpath);
         vfs_stamp_path (tmp_path);
         g_free (tmp_path);
     }
 
     if ((other_panel != NULL) && (get_other_type () == view_listing))
     {
-        char *tmp_path = vfs_path_to_str (other_panel->cwd_vpath);
+        char *tmp_path;
+
+        tmp_path = vfs_path_to_str (other_panel->cwd_vpath);
         vfs_stamp_path (tmp_path);
         g_free (tmp_path);
     }

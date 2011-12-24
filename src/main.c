@@ -272,7 +272,9 @@ do_cd (const char *new_dir, enum cd_enum exact)
 #if HAVE_CHARSET
     if (res)
     {
-        vfs_path_element_t *path_element = vfs_path_get_by_index (current_panel->cwd_vpath, -1);
+        vfs_path_element_t *path_element;
+
+        path_element = vfs_path_get_by_index (current_panel->cwd_vpath, -1);
         if (path_element->encoding != NULL)
             current_panel->codepage = get_codepage_index (path_element->encoding);
         else
@@ -341,7 +343,9 @@ update_xterm_title_path (void)
 
     if (mc_global.tty.xterm_flag && xterm_title)
     {
-        char *path_str = vfs_path_to_str (current_panel->cwd_vpath);
+        char *path_str;
+
+        path_str = vfs_path_to_str (current_panel->cwd_vpath);
         path = strip_home_and_password (path_str);
         g_free (path_str);
         res = gethostname (host, sizeof (host));

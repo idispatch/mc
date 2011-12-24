@@ -954,7 +954,9 @@ invoke_subshell (const char *command, int how, char **new_dir)
     feed_subshell (how, FALSE);
 
     {
-        char *cwd_str = vfs_path_to_str (current_panel->cwd_vpath);
+        char *cwd_str;
+
+        cwd_str = vfs_path_to_str (current_panel->cwd_vpath);
         pcwd = vfs_translate_path_n (cwd_str);
         g_free (cwd_str);
     }
@@ -1193,10 +1195,12 @@ do_subshell_chdir (const vfs_path_t * vpath, gboolean update_prompt, gboolean re
     write_all (mc_global.tty.subshell_pty, " cd ", 4);
 
     directory = vfs_path_to_str (vpath);
-    if (*directory)
+    if (directory != '\0')
     {
-        char *translate = vfs_translate_path_n (directory);
-        if (translate)
+        char *translate;
+
+        translate = vfs_translate_path_n (directory);
+        if (translate != NULL)
         {
             temp = subshell_name_quote (translate);
             if (temp)

@@ -430,6 +430,7 @@ compare_dir (WPanel * panel, WPanel * other, enum CompareMode mode)
             /* Thorough compare on, do byte-by-byte comparison */
             {
                 vfs_path_t *src_name, *dst_name;
+
                 src_name = vfs_path_append_new (panel->cwd_vpath, source->fname, NULL);
                 dst_name = vfs_path_append_new (other->cwd_vpath, target->fname, NULL);
                 if (compare_files (src_name, dst_name, source->st.st_size))
@@ -1032,15 +1033,20 @@ void
 reread_cmd (void)
 {
     panel_update_flags_t flag = UP_ONLY_CURRENT;
-    char *c_cwd = vfs_path_to_str (current_panel->cwd_vpath);
-    char *o_cwd = vfs_path_to_str (other_panel->cwd_vpath);
 
-    if (get_current_type () == view_listing && get_other_type () == view_listing
-        && strcmp (c_cwd, o_cwd) == 0)
-        flag = UP_OPTIMIZE;
+    if (get_current_type () == view_listing && get_other_type () == view_listing)
+    {
+        char *c_cwd, *o_cwd;
 
-    g_free (c_cwd);
-    g_free (o_cwd);
+        c_cwd = vfs_path_to_str (current_panel->cwd_vpath);
+        o_cwd = vfs_path_to_str (other_panel->cwd_vpath);
+
+        if (strcmp (c_cwd, o_cwd) == 0)
+            flag = UP_OPTIMIZE;
+
+        g_free (c_cwd);
+        g_free (o_cwd);
+    }
 
     update_panels (UP_RELOAD | flag, UP_KEEPSEL);
     repaint_screen ();
