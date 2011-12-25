@@ -240,7 +240,9 @@ test_condition (WEdit * edit_widget, char *p, int *condition)
 #ifdef USE_INTERNAL_EDIT
             if (edit_widget != NULL)
             {
-                char *edit_filename = edit_get_file_name (edit_widget);
+                char *edit_filename;
+
+                edit_filename = edit_get_file_name (edit_widget);
                 *condition = mc_search (arg, edit_filename, search_type) ? 1 : 0;
                 g_free (edit_filename);
             }
@@ -775,12 +777,10 @@ expand_format (struct WEdit *edit_widget, char c, gboolean do_quote)
     case 'f':
     case 'p':
         result = (*quote_func) (fname, 0);
-        g_free (fname);
-        return result;
+        goto ret;
     case 'x':
         result = (*quote_func) (extension (fname), 0);
-        g_free (fname);
-        return result;
+        goto ret;
     case 'd':
         {
             char *cwd;
@@ -796,14 +796,15 @@ expand_format (struct WEdit *edit_widget, char c, gboolean do_quote)
             g_free (cwd);
             g_free (fname);
 
-            return qstr;
+            result = qstr;
+            goto ret;
         }
     case 'i':                  /* indent equal number cursor position in line */
 #ifdef USE_INTERNAL_EDIT
         if (edit_widget)
         {
-            g_free (fname);
-            return g_strnfill (edit_get_curs_col (edit_widget), ' ');
+            result = g_strnfill (edit_get_curs_col (edit_widget), ' ');
+            goto ret;
         }
 #endif
         break;
@@ -814,8 +815,8 @@ expand_format (struct WEdit *edit_widget, char c, gboolean do_quote)
             const char *syntax_type = edit_get_syntax_type (edit_widget);
             if (syntax_type != NULL)
             {
-                g_free (fname);
-                return g_strdup (syntax_type);
+                result = g_strdup (syntax_type);
+                goto ret;
             }
         }
 #endif
@@ -826,18 +827,18 @@ expand_format (struct WEdit *edit_widget, char c, gboolean do_quote)
 #ifdef USE_INTERNAL_EDIT
             if (edit_widget)
             {
-                char *file = mc_config_get_full_path (EDIT_BLOCK_FILE);
-                g_free (fname);
-                fname = (*quote_func) (file, 0);
+                char *file;
+
+                file = mc_config_get_full_path (EDIT_BLOCK_FILE);
+                result = (*quote_func) (file, 0);
                 g_free (file);
-                return fname;
+                goto ret;
             }
 #endif
             if (c_lc == 'b')
             {
                 result = strip_ext ((*quote_func) (fname, 0));
-                g_free (fname);
-                return result;
+                goto ret;
             }
             break;
         }
@@ -846,24 +847,22 @@ expand_format (struct WEdit *edit_widget, char c, gboolean do_quote)
         if (edit_widget)
         {
             result = strip_ext ((*quote_func) (fname, 0));
-            g_free (fname);
-            return result;
+            goto ret;
         }
 #endif
         break;
     case 'm':                  /* menu file name */
         if (menu)
         {
-            g_free (fname);
-            return (*quote_func) (menu, 0);
+            result = (*quote_func) (menu, 0);
+            goto ret;
         }
         break;
     case 's':
         if (!panel || !panel->marked)
         {
             result = (*quote_func) (fname, 0);
-            g_free (fname);
-            return result;
+            goto ret;
         }
 
         /* Fall through */
@@ -874,10 +873,11 @@ expand_format (struct WEdit *edit_widget, char c, gboolean do_quote)
             int length = 2, i;
             char *block, *tmp;
 
-            g_free (fname);
-
             if (!panel)
-                return g_strdup ("");
+            {
+                result = g_strdup ("");
+                goto ret;
+            }
 
             for (i = 0; i < panel->count; i++)
                 if (panel->dir.list[i].f.marked)
@@ -895,11 +895,13 @@ expand_format (struct WEdit *edit_widget, char c, gboolean do_quote)
                     if (c_lc == 'u')
                         do_file_mark (panel, i, 0);
                 }
-            return block;
+            result = block;
+            goto ret;
         }                       /* sub case block */
     }                           /* switch */
     result = g_strdup ("% ");
     result[1] = c;
+  ret:
     g_free (fname);
     return result;
 }

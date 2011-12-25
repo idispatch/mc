@@ -2771,7 +2771,9 @@ dview_edit (WDiff * dview, int ord)
     get_line_numbers (dview->a[ord], dview->skip_rows, &linenum, &lineofs);
     h->modal = TRUE;            /* not allow edit file in several editors */
     {
-        vfs_path_t *tmp_vpath = vfs_path_from_str (dview->file[ord]);
+        vfs_path_t *tmp_vpath;
+
+        tmp_vpath = vfs_path_from_str (dview->file[ord]);
         do_edit_at_line (tmp_vpath, use_internal_edit, linenum);
         vfs_path_free (tmp_vpath);
     }

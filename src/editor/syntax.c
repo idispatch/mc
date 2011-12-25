@@ -1515,7 +1515,9 @@ edit_load_syntax (WEdit * edit, char ***pnames, const char *type)
     f = mc_config_get_full_path (EDIT_SYNTAX_FILE);
     if (edit != NULL)
     {
-        char *tmp_f = vfs_path_to_str (edit->filename_vpath);
+        char *tmp_f;
+
+        tmp_f = vfs_path_to_str (edit->filename_vpath);
         r = edit_read_syntax_file (edit, pnames, f, tmp_f,
                                    get_first_editor_line (edit),
                                    option_auto_syntax ? NULL : edit->syntax_type);

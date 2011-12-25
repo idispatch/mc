@@ -825,7 +825,9 @@ do_edit_at_line (const vfs_path_t * what_vpath, gboolean internal, int start_lin
     (void) start_line;
 #endif /* USE_INTERNAL_EDIT */
     {
-        char *what = vfs_path_to_str (what_vpath);
+        char *what;
+
+        what = vfs_path_to_str (what_vpath);
         if (editor == NULL)
         {
             editor = getenv ("EDITOR");
@@ -854,7 +856,9 @@ edit_cmd (void)
 {
     if (regex_command (selection (current_panel)->fname, "Edit", NULL) == 0)
     {
-        vfs_path_t *fname = vfs_path_from_str (selection (current_panel)->fname);
+        vfs_path_t *fname;
+
+        fname = vfs_path_from_str (selection (current_panel)->fname);
         do_edit (fname);
         vfs_path_free (fname);
     }
@@ -868,7 +872,9 @@ edit_cmd_force_internal (void)
 {
     if (regex_command (selection (current_panel)->fname, "Edit", NULL) == 0)
     {
-        vfs_path_t *fname = vfs_path_from_str (selection (current_panel)->fname);
+        vfs_path_t *fname;
+
+        fname = vfs_path_from_str (selection (current_panel)->fname);
         do_edit_at_line (fname, TRUE, 0);
         vfs_path_free (fname);
     }

@@ -1298,7 +1298,7 @@ save_file_position (const vfs_path_t * filename_vpath, long line, long column, o
     size_t i;
     const size_t len = vfs_path_len (filename_vpath);
     gboolean src_error = FALSE;
-    char *filename = vfs_path_to_str (filename_vpath);
+    char *filename;
 
     if (filepos_max_saved_entries == 0)
         filepos_max_saved_entries = mc_config_get_int (mc_main_config, CONFIG_APP_SECTION,
@@ -1323,6 +1323,7 @@ save_file_position (const vfs_path_t * filename_vpath, long line, long column, o
         goto open_source_error;
     }
 
+    filename = vfs_path_to_str (filename_vpath);
     /* put the new record */
     if (line != 1 || column != 0 || bookmarks != NULL)
     {
@@ -1350,6 +1351,7 @@ save_file_position (const vfs_path_t * filename_vpath, long line, long column, o
     }
 
   write_position_error:
+    g_free (filename);
     fclose (tmp_f);
   open_source_error:
     g_free (tmp_fn);
@@ -1361,7 +1363,6 @@ save_file_position (const vfs_path_t * filename_vpath, long line, long column, o
   open_target_error:
     g_free (fn);
   early_error:
-    g_free (filename);
     if (bookmarks != NULL)
         g_array_free (bookmarks, TRUE);
 }

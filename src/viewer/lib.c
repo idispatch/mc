@@ -235,6 +235,7 @@ mcview_done (mcview_t * view)
     if (mcview_remember_file_position && view->filename != NULL)
     {
         vfs_path_t *vpath;
+
         vpath = vfs_path_from_str (view->filename);
         save_file_position (vpath, -1, 0,
                             view->hex_mode ? view->hex_cursor : view->dpy_start,

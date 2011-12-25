@@ -963,7 +963,9 @@ mc_maybe_editor_or_viewer (void)
 #ifdef USE_INTERNAL_EDIT
     case MC_RUN_EDITOR:
         {
-            vfs_path_t *param_vpath = vfs_path_from_str (mc_run_param0);
+            vfs_path_t *param_vpath;
+
+            param_vpath = vfs_path_from_str (mc_run_param0);
             edit_file (param_vpath, mc_args__edit_start_line);
             vfs_path_free (param_vpath);
         }
