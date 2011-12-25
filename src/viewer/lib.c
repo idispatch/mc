@@ -414,9 +414,11 @@ mcview_get_title (const Dlg_head * h, size_t len)
     const mcview_t *view = (const mcview_t *) find_widget_type (h, mcview_callback);
     const char *modified = view->hexedit_mode && (view->change_list != NULL) ? "(*) " : "    ";
     const char *file_label;
-    char *view_filename =
-        view->filename_vpath != NULL ? vfs_path_to_str (view->filename_vpath) : NULL;
+    char *view_filename;
     char *ret_str;
+
+    view_filename =
+        view->filename_vpath != NULL ? vfs_path_to_str (view->filename_vpath) : NULL;
 
     len -= 4;
 

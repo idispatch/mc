@@ -365,9 +365,10 @@ mcview_load (mcview_t * view, const char *command, const char *file, int start_l
 
             if (view->magic_mode && (type != COMPRESSION_NONE))
             {
-                char *tmp_filename = g_strconcat (file, decompress_extension (type), (char *) NULL);
-                vfs_path_free (view->filename_vpath);
+                char *tmp_filename;
 
+                vfs_path_free (view->filename_vpath);
+                tmp_filename = g_strconcat (file, decompress_extension (type), (char *) NULL);
                 view->filename_vpath = vfs_path_from_str (tmp_filename);
                 g_free (tmp_filename);
             }
