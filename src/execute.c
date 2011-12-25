@@ -339,7 +339,7 @@ toggle_panels (void)
 #ifdef HAVE_SUBSHELL_SUPPORT
     if (mc_global.tty.use_subshell)
     {
-        new_dir_p = vfs_current_is_local ()? &new_dir_vpath : NULL;
+        new_dir_p = vfs_current_is_local () ? &new_dir_vpath : NULL;
         invoke_subshell (NULL, VISIBLY, new_dir_p);
     }
     else
@@ -396,6 +396,8 @@ toggle_panels (void)
                                    LINES - mc_global.keybar_visible - output_lines -
                                    1, LINES - mc_global.keybar_visible - 1);
     }
+
+    vfs_path_free (new_dir_vpath);
 #endif /* HAVE_SUBSHELL_SUPPORT */
 
     if (mc_global.mc_run_mode == MC_RUN_FULL)
@@ -404,9 +406,6 @@ toggle_panels (void)
         update_xterm_title_path ();
     }
     repaint_screen ();
-
-    if (new_dir_vpath != NULL)
-        vfs_path_free (new_dir_vpath);
 }
 
 /* --------------------------------------------------------------------------------------------- */
