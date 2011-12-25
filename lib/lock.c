@@ -195,43 +195,42 @@ lock_get_info (const char *lockfname)
 int
 lock_file (const vfs_path_t * fname_vpath)
 {
-    char *lockfname, *newlock, *msg, *lock;
+    char *lockfname = NULL, *newlock, *msg, *lock;
     struct stat statbuf;
     struct lock_s *lockinfo;
-    gboolean symlink_ok;
-    char *fname = vfs_path_to_str (fname_vpath);
+    gboolean is_local;
+    gboolean symlink_ok = FALSE;
+    char *fname_tmp, *fname;
 
     /* Just to be sure (and don't lock new file) */
-    if (fname == NULL || *fname == '\0')
-        return 0;
-
-    fname = tilde_expand (fname);
-
-    /* Locking on VFS is not supported */
-    if (!vfs_file_is_local (fname_vpath))
+    fname_tmp = vfs_path_to_str (fname_vpath);
+    if (fname_tmp == NULL || *fname_tmp == '\0')
     {
-        vfs_path_free ((vfs_path_t *) fname_vpath);
-        g_free (fname);
+        g_free (fname_tmp);
         return 0;
     }
-    vfs_path_free ((vfs_path_t *) fname_vpath);
+
+    fname = tilde_expand (fname_tmp);
+    g_free (fname_tmp);
+
+    /* Locking on VFS is not supported */
+    is_local = vfs_file_is_local (fname_vpath);
+    if (is_local)
+    {
+        /* Check if already locked */
+        lockfname = lock_build_symlink_name (fname);
+    }
+
     g_free (fname);
 
-    /* Check if already locked */
-    lockfname = lock_build_symlink_name (fname);
-    vfs_path_free ((vfs_path_t *) fname_vpath);
-
-    if (lockfname == NULL)
+    if (!is_local || lockfname == NULL)
         return 0;
 
     if (lstat (lockfname, &statbuf) == 0)
     {
         lock = lock_get_info (lockfname);
         if (lock == NULL)
-        {
-            g_free (lockfname);
-            return 0;
-        }
+            goto ret;
         lockinfo = lock_extract_info (lock);
 
         /* Check if locking process alive, ask user if required */
@@ -250,9 +249,9 @@ lock_file (const vfs_path_t * fname_vpath)
                 break;
             case 1:
             case -1:
-                g_free (lockfname);
                 g_free (msg);
-                return 0;
+                goto ret;
+                break;  /* FIXME: unneeded? */
             }
             g_free (msg);
         }
@@ -263,8 +262,9 @@ lock_file (const vfs_path_t * fname_vpath)
     newlock = lock_build_name ();
     symlink_ok = (symlink (newlock, lockfname) != -1);
     g_free (newlock);
-    g_free (lockfname);
 
+  ret:
+    g_free (lockfname);
     return symlink_ok ? 1 : 0;
 }
 
@@ -279,16 +279,19 @@ unlock_file (const vfs_path_t * fname_vpath)
 {
     char *lockfname, *lock;
     struct stat statbuf;
-    char *fname = vfs_path_to_str (fname_vpath);
+    char *fname_tmp, *fname;
 
     /* Just to be sure */
-    if (fname == NULL || *fname == '\0')
+    fname_tmp = vfs_path_to_str (fname_vpath);
+    if (fname_tmp == NULL || *fname_tmp == '\0')
+    {
+        g_free (fname_tmp);
         return 0;
+    }
 
-    fname = tilde_expand (fname);
+    fname = tilde_expand (fname_tmp);
+    g_free (fname_tmp);
     lockfname = lock_build_symlink_name (fname);
-
-    vfs_path_free ((vfs_path_t *) fname_vpath);
     g_free (fname);
 
     if (lockfname == NULL)
@@ -296,24 +299,20 @@ unlock_file (const vfs_path_t * fname_vpath)
 
     /* Check if lock exists */
     if (lstat (lockfname, &statbuf) == -1)
-    {
-        g_free (lockfname);
-        return 0;
-    }
+        goto ret;
 
     lock = lock_get_info (lockfname);
     if (lock != NULL)
     {
         /* Don't touch if lock is not ours */
         if (lock_extract_info (lock)->pid != getpid ())
-        {
-            g_free (lockfname);
-            return 0;
-        }
+            goto ret;
     }
 
     /* Remove lock */
     unlink (lockfname);
+
+  ret:
     g_free (lockfname);
     return 0;
 }
