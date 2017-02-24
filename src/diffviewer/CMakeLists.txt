@@ -1,0 +1,1 @@
+add_library(mc-diffviewer STATIC internal.h search.c ydiff.c ydiff.h)

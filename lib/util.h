@@ -41,7 +41,7 @@
 /*** enums ***************************************************************************************/
 
 /* Pathname canonicalization */
-typedef enum
+typedef enum CANON_PATH_FLAGS_enum
 {
     CANON_PATH_JOINSLASHES = 1L << 0,   /* Multiple '/'s are collapsed to a single '/'. */
     CANON_PATH_REMSLASHDOTS = 1L << 1,  /* Leading './'s, '/'s and trailing '/.'s are removed. */

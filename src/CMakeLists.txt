@@ -1,0 +1,48 @@
+add_subdirectory(diffviewer)
+add_subdirectory(editor)
+add_subdirectory(filemanager)
+add_subdirectory(subshell)
+add_subdirectory(viewer)
+add_subdirectory(vfs)
+#add_subdirectory(consaver)
+add_executable(mc
+               args.c
+               background.c
+               clipboard.c
+               cons.handler.c
+               events_init.c
+               execute.c
+               file_history.c
+               help.c
+               keybind-defaults.c
+               learn.c
+               main.c
+               selcodepage.c
+               setup.c
+               textconf.c
+               usermenu.c
+               util.c
+               )
+target_include_directories(mc PRIVATE ../)
+target_link_libraries(mc PRIVATE
+                      mc-lib
+                      mc-config
+                      mc-diffviewer
+                      mc-event
+                      mc-filehighlight
+                      mc-filemanager
+                      mc-editor
+                      mc-search
+                      mc-skin
+                      mc-strutil
+                      mc-tty
+                      mc-subshell
+                      mc-vfs
+                      mc-vfs-lib
+                      mc-viewer
+                      mc-widget
+                      glib-2.0
+                      gmodule-2.0
+                      intl
+                      slang
+                      )

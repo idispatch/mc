@@ -152,13 +152,13 @@
 
 /*** enums ***************************************************************************************/
 
-/* run mode and params */
-typedef enum
+/** run mode and params */
+typedef enum mc_run_mode_enum
 {
-    MC_RUN_FULL = 0,
-    MC_RUN_EDITOR,
-    MC_RUN_VIEWER,
-    MC_RUN_DIFFVIEWER
+    MC_RUN_FULL = 0,    ///< Run mc, mcedit, mcviee and mcdiff
+    MC_RUN_EDITOR,      ///< Run mcedit only
+    MC_RUN_VIEWER,      ///< Run mcview only
+    MC_RUN_DIFFVIEWER   ///< Run mcdiff only
 } mc_run_mode_t;
 
 /*** structures declarations (and typedefs of structures)*****************************************/

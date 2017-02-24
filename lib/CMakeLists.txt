@@ -1,0 +1,37 @@
+add_library(mc-lib STATIC
+        charsets.c
+        event.h
+        event-types.h
+        filehighlight.h
+        fileloc.h
+        fs.h
+        glibcompat.c
+        glibcompat.h
+        global.c
+        hook.c
+        keybind.c
+        lock.c
+        logging.c
+        mcconfig.h
+        search.h
+        skin.h
+        stat-size.h
+        strescape.h
+        strutil.h
+        serialize.c
+        shell.c
+        timefmt.c
+        timer.c
+        unixcompat.h
+        util.c
+        utilunix.c
+        widget.h)
+add_subdirectory(event)
+add_subdirectory(filehighlight)
+add_subdirectory(mcconfig)
+add_subdirectory(search)
+add_subdirectory(skin)
+add_subdirectory(strutil)
+add_subdirectory(tty)
+add_subdirectory(vfs)
+add_subdirectory(widget)

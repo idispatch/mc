@@ -25,7 +25,7 @@
 /*** enums ***************************************************************************************/
 
 /* Widget messages */
-typedef enum
+typedef enum widget_msg_t
 {
     MSG_INIT = 0,               /* Initialize widget */
     MSG_FOCUS,                  /* Draw widget in focused state or widget has got focus */
@@ -57,14 +57,14 @@ typedef enum
    MSG_HOTKEY:  MSG_HANDLED if they actually used the key, MSG_NOT_HANDLED if not.
  */
 
-typedef enum
+typedef enum cb_ret_t
 {
     MSG_NOT_HANDLED = 0,
     MSG_HANDLED = 1
 } cb_ret_t;
 
 /* Widget options */
-typedef enum
+typedef enum widget_options_t
 {
     WOP_DEFAULT = (0 << 0),
     WOP_WANT_HOTKEY = (1 << 0),
@@ -76,7 +76,7 @@ typedef enum
 } widget_options_t;
 
 /* Widget state */
-typedef enum
+typedef enum widget_state_t
 {
     WST_DEFAULT = (0 << 0),
     WST_DISABLED = (1 << 0),    /* Widget cannot be selected */
