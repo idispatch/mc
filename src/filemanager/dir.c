@@ -1,7 +1,7 @@
 /*
    Directory routines
 
-   Copyright (C) 1994-2017
+   Copyright (C) 1994-2019
    Free Software Foundation, Inc.
 
    Written by:
@@ -42,13 +42,12 @@
 #include "lib/fs.h"
 #include "lib/strutil.h"
 #include "lib/util.h"
-#include "lib/widget.h"         /* message() */
 
 #include "src/setup.h"          /* panels_options */
 
 #include "treestore.h"
+#include "file.h"               /* file_is_symlink_to_dir() */
 #include "dir.h"
-#include "layout.h"             /* rotate_dash() */
 
 /*** global variables ****************************************************************************/
 
@@ -67,12 +66,12 @@
 static int reverse = 1;
 
 /* Are the files sorted case sensitively? */
-static int case_sensitive = OS_SORT_CASE_SENSITIVE_DEFAULT;
+static gboolean case_sensitive = OS_SORT_CASE_SENSITIVE_DEFAULT;
 
 /* Are the exec_bit files top in list */
 static gboolean exec_first = TRUE;
 
-static dir_list dir_copy = { NULL, 0, 0 };
+static dir_list dir_copy = { NULL, 0, 0, NULL };
 
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
@@ -146,8 +145,8 @@ clean_sort_keys (dir_list * list, int start, int count)
  */
 
 static gboolean
-handle_dirent (struct dirent *dp, const char *fltr, struct stat *buf1, int *link_to_dir,
-               int *stale_link)
+handle_dirent (struct dirent *dp, const char *fltr, struct stat *buf1, gboolean * link_to_dir,
+               gboolean * stale_link)
 {
     vfs_path_t *vpath;
 
@@ -173,21 +172,11 @@ handle_dirent (struct dirent *dp, const char *fltr, struct stat *buf1, int *link
         tree_store_mark_checked (dp->d_name);
 
     /* A link to a file or a directory? */
-    *link_to_dir = 0;
-    *stale_link = 0;
-    if (S_ISLNK (buf1->st_mode))
-    {
-        struct stat buf2;
-
-        if (mc_stat (vpath, &buf2) == 0)
-            *link_to_dir = S_ISDIR (buf2.st_mode) != 0;
-        else
-            *stale_link = 1;
-    }
+    *link_to_dir = file_is_symlink_to_dir (vpath, buf1, stale_link);
 
     vfs_path_free (vpath);
 
-    return (S_ISDIR (buf1->st_mode) || *link_to_dir != 0 || fltr == NULL
+    return (S_ISDIR (buf1->st_mode) || *link_to_dir || fltr == NULL
             || mc_search (fltr, NULL, dp->d_name, MC_SEARCH_T_GLOB));
 }
 
@@ -225,18 +214,7 @@ alloc_dir_copy (int size)
     if (dir_copy.size < size)
     {
         if (dir_copy.list != NULL)
-        {
-            int i;
-
-            for (i = 0; i < dir_copy.len; i++)
-            {
-                file_entry_t *fentry;
-
-                fentry = &(dir_copy.list)[i];
-                g_free (fentry->fname);
-            }
-            g_free (dir_copy.list);
-        }
+            dir_list_free_list (&dir_copy);
 
         dir_copy.list = g_new0 (file_entry_t, size);
         dir_copy.size = size;
@@ -372,7 +350,7 @@ sort_vers (file_entry_t * a, file_entry_t * b)
 
     if (ad == bd || panels_options.mix_all_files)
     {
-        return str_verscmp (a->fname, b->fname) * reverse;
+        return filevercmp (a->fname, b->fname) * reverse;
     }
     else
     {
@@ -398,7 +376,7 @@ sort_ext (file_entry_t * a, file_entry_t * b)
             b->second_sort_key = str_create_key (extension (b->fname), case_sensitive);
 
         r = str_key_collate (a->second_sort_key, b->second_sort_key, case_sensitive);
-        if (r)
+        if (r != 0)
             return r * reverse;
         else
             return sort_name (a, b);
@@ -546,6 +524,26 @@ dir_list_clean (dir_list * list)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+
+void
+dir_list_free_list (dir_list * list)
+{
+    int i;
+
+    for (i = 0; i < list->len; i++)
+    {
+        file_entry_t *fentry;
+
+        fentry = &list->list[i];
+        g_free (fentry->fname);
+    }
+
+    MC_PTR_FREE (list->list);
+    list->len = 0;
+    list->size = 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
 /** Used to set up a directory list when there is no access to a directory */
 
 gboolean
@@ -583,7 +581,7 @@ dir_list_init (dir_list * list)
 /* Return values: FALSE = don't add, TRUE = add to the list */
 
 gboolean
-handle_path (const char *path, struct stat * buf1, int *link_to_dir, int *stale_link)
+handle_path (const char *path, struct stat * buf1, gboolean * link_to_dir, gboolean * stale_link)
 {
     vfs_path_t *vpath;
 
@@ -601,8 +599,8 @@ handle_path (const char *path, struct stat * buf1, int *link_to_dir, int *stale_
         tree_store_mark_checked (path);
 
     /* A link to a file or a directory? */
-    *link_to_dir = 0;
-    *stale_link = 0;
+    *link_to_dir = FALSE;
+    *stale_link = FALSE;
     if (S_ISLNK (buf1->st_mode))
     {
         struct stat buf2;
@@ -610,7 +608,7 @@ handle_path (const char *path, struct stat * buf1, int *link_to_dir, int *stale_
         if (mc_stat (vpath, &buf2) == 0)
             *link_to_dir = S_ISDIR (buf2.st_mode) != 0;
         else
-            *stale_link = 1;
+            *stale_link = TRUE;
     }
 
     vfs_path_free (vpath);
@@ -620,31 +618,30 @@ handle_path (const char *path, struct stat * buf1, int *link_to_dir, int *stale_
 
 /* --------------------------------------------------------------------------------------------- */
 
-void
+gboolean
 dir_list_load (dir_list * list, const vfs_path_t * vpath, GCompareFunc sort,
                const dir_sort_options_t * sort_op, const char *fltr)
 {
     DIR *dirp;
     struct dirent *dp;
-    int link_to_dir, stale_link;
     struct stat st;
     file_entry_t *fentry;
     const char *vpath_str;
+    gboolean ret = TRUE;
 
     /* ".." (if any) must be the first entry in the list */
     if (!dir_list_init (list))
-        return;
+        return FALSE;
 
     fentry = &list->list[0];
     if (dir_get_dotdot_stat (vpath, &st))
         fentry->st = st;
 
+    if (list->callback != NULL)
+        list->callback (DIR_OPEN, (void *) vpath);
     dirp = mc_opendir (vpath);
     if (dirp == NULL)
-    {
-        message (D_ERROR, MSG_ERROR, _("Cannot read directory contents"));
-        return;
-    }
+        return FALSE;
 
     tree_store_start_check (vpath);
 
@@ -653,24 +650,29 @@ dir_list_load (dir_list * list, const vfs_path_t * vpath, GCompareFunc sort,
     if (IS_PATH_SEP (vpath_str[0]) && vpath_str[1] == '\0')
         dir_list_clean (list);
 
-    while ((dp = mc_readdir (dirp)) != NULL)
+    while (ret && (dp = mc_readdir (dirp)) != NULL)
     {
+        gboolean link_to_dir, stale_link;
+
+        if (list->callback != NULL)
+            list->callback (DIR_READ, dp);
+
         if (!handle_dirent (dp, fltr, &st, &link_to_dir, &stale_link))
             continue;
 
-        if (!dir_list_append (list, dp->d_name, &st, link_to_dir != 0, stale_link != 0))
-            goto ret;
-
-        if ((list->len & 31) == 0)
-            rotate_dash (TRUE);
+        if (!dir_list_append (list, dp->d_name, &st, link_to_dir, stale_link))
+            ret = FALSE;
     }
 
-    dir_list_sort (list, sort, sort_op);
+    if (ret)
+        dir_list_sort (list, sort, sort_op);
 
-  ret:
+    if (list->callback != NULL)
+        list->callback (DIR_CLOSE, NULL);
     mc_closedir (dirp);
     tree_store_end_check ();
-    rotate_dash (FALSE);
+
+    return ret;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -688,25 +690,27 @@ if_link_is_exe (const vfs_path_t * full_name_vpath, const file_entry_t * file)
 /* --------------------------------------------------------------------------------------------- */
 /** If fltr is null, then it is a match */
 
-void
+gboolean
 dir_list_reload (dir_list * list, const vfs_path_t * vpath, GCompareFunc sort,
                  const dir_sort_options_t * sort_op, const char *fltr)
 {
     DIR *dirp;
     struct dirent *dp;
-    int i, link_to_dir, stale_link;
+    int i;
     struct stat st;
     int marked_cnt;
     GHashTable *marked_files;
     const char *tmp_path;
+    gboolean ret = TRUE;
 
+    if (list->callback != NULL)
+        list->callback (DIR_OPEN, (void *) vpath);
     dirp = mc_opendir (vpath);
     if (dirp == NULL)
     {
-        message (D_ERROR, MSG_ERROR, _("Cannot read directory contents"));
         dir_list_clean (list);
         dir_list_init (list);
-        return;
+        return FALSE;
     }
 
     tree_store_start_check (vpath);
@@ -751,8 +755,8 @@ dir_list_reload (dir_list * list, const vfs_path_t * vpath, GCompareFunc sort,
         dir_list_clean (list);
         if (!dir_list_init (list))
         {
-            dir_list_clean (&dir_copy);
-            return;
+            dir_list_free_list (&dir_copy);
+            return FALSE;
         }
 
         if (dir_get_dotdot_stat (vpath, &st))
@@ -764,56 +768,48 @@ dir_list_reload (dir_list * list, const vfs_path_t * vpath, GCompareFunc sort,
         }
     }
 
-    while ((dp = mc_readdir (dirp)) != NULL)
+    while (ret && (dp = mc_readdir (dirp)) != NULL)
     {
-        file_entry_t *fentry;
+        gboolean link_to_dir, stale_link;
+
+        if (list->callback != NULL)
+            list->callback (DIR_READ, dp);
 
         if (!handle_dirent (dp, fltr, &st, &link_to_dir, &stale_link))
             continue;
 
-        if (!dir_list_append (list, dp->d_name, &st, link_to_dir != 0, stale_link != 0))
+        if (!dir_list_append (list, dp->d_name, &st, link_to_dir, stale_link))
+            ret = FALSE;
+        else
         {
-            mc_closedir (dirp);
-            /* Norbert (Feb 12, 1997):
-               Just in case someone finds this memory leak:
-               -1 means big trouble (at the moment no memory left),
-               I don't bother with further cleanup because if one gets to
-               this point he will have more problems than a few memory
-               leaks and because one 'dir_list_clean' would not be enough (and
-               because I don't want to spent the time to make it working,
-               IMHO it's not worthwhile).
-               dir_list_clean (&dir_copy);
+            file_entry_t *fentry;
+
+            fentry = &list->list[list->len - 1];
+
+            /*
+             * If we have marked files in the copy, scan through the copy
+             * to find matching file.  Decrease number of remaining marks if
+             * we copied one.
              */
-            tree_store_end_check ();
-            g_hash_table_destroy (marked_files);
-            return;
+            fentry->f.marked = (marked_cnt > 0
+                                && g_hash_table_lookup (marked_files, dp->d_name) != NULL);
+            if (fentry->f.marked)
+                marked_cnt--;
         }
-        fentry = &list->list[list->len - 1];
-
-        fentry->f.marked = 0;
-
-        /*
-         * If we have marked files in the copy, scan through the copy
-         * to find matching file.  Decrease number of remaining marks if
-         * we copied one.
-         */
-        if (marked_cnt > 0 && g_hash_table_lookup (marked_files, dp->d_name) != NULL)
-        {
-            fentry->f.marked = 1;
-            marked_cnt--;
-        }
-
-        if ((list->len & 15) == 0)
-            rotate_dash (TRUE);
     }
+
+    if (ret)
+        dir_list_sort (list, sort, sort_op);
+
+    if (list->callback != NULL)
+        list->callback (DIR_CLOSE, NULL);
     mc_closedir (dirp);
     tree_store_end_check ();
+
     g_hash_table_destroy (marked_files);
+    dir_list_free_list (&dir_copy);
 
-    dir_list_sort (list, sort, sort_op);
-
-    dir_list_clean (&dir_copy);
-    rotate_dash (FALSE);
+    return ret;
 }
 
 /* --------------------------------------------------------------------------------------------- */

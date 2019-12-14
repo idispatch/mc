@@ -1,7 +1,7 @@
 /*
    Editor high level editing commands
 
-   Copyright (C) 1996-2017
+   Copyright (C) 1996-2019
    Free Software Foundation, Inc.
 
    Written by:
@@ -62,6 +62,7 @@
 #endif
 
 #include "src/history.h"
+#include "src/file_history.h"   /* show_file_history() */
 #include "src/setup.h"          /* option_tab_spacing */
 #ifdef HAVE_CHARSET
 #include "src/selcodepage.h"
@@ -233,7 +234,7 @@ edit_save_file (WEdit * edit, const vfs_path_t * filename_vpath)
             {
             case 0:
                 this_save_mode = EDIT_SAFE_SAVE;
-                /* fallthrough */
+                MC_FALLTHROUGH;
             case 1:
                 edit->skip_detach_prompt = 1;
                 break;
@@ -922,12 +923,9 @@ edit_replace_cmd__conv_to_input (char *str)
     GString *tmp;
 
     tmp = str_convert_to_input (str);
-    if (tmp != NULL)
-    {
-        if (tmp->len != 0)
-            return g_string_free (tmp, FALSE);
-        g_string_free (tmp, TRUE);
-    }
+    if (tmp->len != 0)
+        return g_string_free (tmp, FALSE);
+    g_string_free (tmp, TRUE);
 #endif
     return g_strdup (str);
 }
@@ -965,7 +963,7 @@ edit_do_search (WEdit * edit)
 
     if (search_create_bookmark)
     {
-        int found = 0, books = 0;
+        gboolean found = FALSE;
         long l = 0, l_last = -1;
         long q = 0;
 
@@ -974,20 +972,19 @@ edit_do_search (WEdit * edit)
 
         while (mc_search_run (edit->search, (void *) &esm, q, edit->buffer.size, &len))
         {
-            if (found == 0)
+            if (!found)
                 edit->search_start = edit->search->normal_offset;
-            found++;
+            found = TRUE;
             l += edit_buffer_count_lines (&edit->buffer, q, edit->search->normal_offset);
             if (l != l_last)
             {
                 book_mark_insert (edit, l, BOOK_MARK_FOUND_COLOR);
-                books++;
             }
             l_last = l;
             q = edit->search->normal_offset + 1;
         }
 
-        if (found == 0)
+        if (!found)
             edit_error_dialog (_("Search"), _(STR_E_NOTFOUND));
         else
             edit_cursor_move (edit, edit->search_start - edit->buffer.curs1);
@@ -1308,9 +1305,9 @@ edit_collect_completions (WEdit * edit, off_t word_start, gsize word_len,
 #ifdef HAVE_CHARSET
         {
             GString *recoded;
-            recoded = str_convert_to_display (temp->str);
 
-            if (recoded && recoded->len)
+            recoded = str_convert_to_display (temp->str);
+            if (recoded->len != 0)
                 g_string_assign (temp, recoded->str);
 
             g_string_free (recoded, TRUE);
@@ -1777,7 +1774,7 @@ edit_save_as_cmd (WEdit * edit)
                 return TRUE;
             default:
                 edit_error_dialog (_("Save as"), get_sys_error (_("Cannot save file")));
-                /* fallthrough */
+                MC_FALLTHROUGH;
             case -1:
                 /* Failed, so maintain modify (not save) lock */
                 if (save_lock)
@@ -2096,6 +2093,35 @@ edit_load_cmd (WDialog * h)
                                INPUT_COMPLETE_FILENAMES | INPUT_COMPLETE_CD);
 
     if (exp != NULL && *exp != '\0')
+    {
+        vfs_path_t *exp_vpath;
+
+        exp_vpath = vfs_path_from_str (exp);
+        ret = edit_load_file_from_filename (h, exp_vpath);
+        vfs_path_free (exp_vpath);
+    }
+
+    g_free (exp);
+
+    return ret;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+  * Show history od edited or viewed files and open selected file.
+  *
+  * @return TRUE on success, FALSE otherwise.
+  */
+
+gboolean
+edit_load_file_from_history (WDialog * h)
+{
+    char *exp;
+    int action;
+    gboolean ret = TRUE;        /* possible cancel */
+
+    exp = show_file_history (CONST_WIDGET (h), &action);
+    if (exp != NULL && (action == CK_Edit || action == CK_Enter))
     {
         vfs_path_t *exp_vpath;
 
@@ -2780,7 +2806,7 @@ edit_search_cmd (WEdit * edit, gboolean again)
         /* find last search string in history */
         GList *history;
 
-        history = history_get (MC_HISTORY_SHARED_SEARCH);
+        history = mc_config_history_get (MC_HISTORY_SHARED_SEARCH);
         if (history != NULL && history->data != NULL)
         {
             edit->last_search_string = (char *) history->data;

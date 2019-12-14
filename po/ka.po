@@ -1,6 +1,6 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Free Software Foundation, Inc.
-# This file is distributed under the same license as the PACKAGE package.
+# This file is distributed under the same license as the mc package.
 #
 # Translators:
 # George Machitidze <giomac@gmail.com>, 2012,2014
@@ -8,15 +8,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2016-11-21 13:19+0300\n"
-"PO-Revision-Date: 2016-05-08 08:14+0000\n"
+"POT-Creation-Date: 2019-09-01 20:04+0300\n"
+"PO-Revision-Date: 2019-03-02 12:55+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Georgian (http://www.transifex.com/mc/mc/language/ka/)\n"
 "Language: ka\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
 # "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 msgid "Warning: cannot load codepages list"
@@ -88,6 +88,23 @@ msgstr ""
 msgid ""
 "Your old settings were migrated from %s\n"
 "to %s\n"
+msgstr ""
+
+msgid ""
+"Number out of range (should be in byte range, 0 <= n <= 0xFF, expressed in "
+"hex)"
+msgstr ""
+
+msgid "Invalid character"
+msgstr ""
+
+msgid "Unmatched quotes character"
+msgstr ""
+
+#, c-format
+msgid ""
+"Hex pattern error at position %d:\n"
+"%s."
 msgstr ""
 
 msgid "Search string not found"
@@ -442,6 +459,15 @@ msgstr "Shift"
 msgid "The TERM environment variable is unset!\n"
 msgstr ""
 
+msgid "Cannot create pipe for SIGWINCH"
+msgstr ""
+
+msgid "Cannot configure write end of SIGWINCH pipe"
+msgstr ""
+
+msgid "Cannot configure read end of SIGWINCH pipe"
+msgstr ""
+
 #, c-format
 msgid ""
 "Screen size %dx%d is not supported.\n"
@@ -546,7 +572,6 @@ msgstr ""
 msgid "Temporary files will not be created\n"
 msgstr ""
 
-#, c-format
 msgid "Press any key to continue..."
 msgstr "გასაგრძელებლად დააჭირეთ ნებისმიერ ღილაკს..."
 
@@ -615,6 +640,9 @@ msgstr "კონფიგურაციის პარამეტრებ�
 msgid "Print last working directory to specified file"
 msgstr ""
 
+msgid "<file>"
+msgstr ""
+
 msgid "Enables subshell support (default)"
 msgstr ""
 
@@ -627,11 +655,17 @@ msgstr ""
 msgid "Set debug level"
 msgstr ""
 
+msgid "<integer>"
+msgstr ""
+
 msgid "Launches the file viewer on a file"
 msgstr ""
 
 msgid "Edit files"
 msgstr "ფაილების რედაქტირება"
+
+msgid "<file> ..."
+msgstr ""
 
 msgid "Forces xterm features"
 msgstr ""
@@ -670,6 +704,9 @@ msgid "Request to run in color mode"
 msgstr ""
 
 msgid "Specifies a color configuration"
+msgstr ""
+
+msgid "<string>"
 msgstr ""
 
 msgid "Show mc with specified skin"
@@ -714,13 +751,16 @@ msgstr ""
 msgid "Color options"
 msgstr "ფერების პარამეტრები"
 
-msgid "+number"
+msgid "[+lineno] file1[:lineno] [file2[:lineno]...]"
+msgstr ""
+
+msgid "file"
+msgstr ""
+
+msgid "file1 file2"
 msgstr ""
 
 msgid "[this_dir] [other_panel_dir]"
-msgstr ""
-
-msgid "Set initial line number for the internal editor"
 msgstr ""
 
 msgid ""
@@ -1253,6 +1293,10 @@ msgstr "&ახალი"
 msgid "&Close"
 msgstr "დაკე&ტვა"
 
+#, fuzzy
+msgid "&History..."
+msgstr "ისტორია"
+
 msgid "Save &as..."
 msgstr ""
 
@@ -1534,7 +1578,7 @@ msgid ""
 "written for the Midnight Commander."
 msgstr ""
 
-msgid "Copyright (C) 1996-2016 the Free Software Foundation"
+msgid "Copyright (C) 1996-2019 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1681,7 +1725,11 @@ msgstr ""
 msgid "The shell is already running a command"
 msgstr ""
 
-#, c-format
+msgid ""
+"Not an xterm or Linux console;\n"
+"the panels cannot be toggled."
+msgstr ""
+
 msgid "Type 'exit' to return to the Midnight Commander"
 msgstr ""
 
@@ -1713,6 +1761,15 @@ msgstr ""
 msgid ""
 "Cannot chmod \"%s\"\n"
 "%s"
+msgstr ""
+
+msgid "&Ignore"
+msgstr ""
+
+msgid "Ignore &all"
+msgstr ""
+
+msgid "&Retry"
 msgstr ""
 
 #, c-format
@@ -1803,6 +1860,9 @@ msgid "Cd follows lin&ks"
 msgstr ""
 
 msgid "Sa&fe delete"
+msgstr ""
+
+msgid "Safe overwrite"
 msgstr ""
 
 msgid "A&uto save setup"
@@ -1911,7 +1971,7 @@ msgstr ""
 msgid "User &mini status"
 msgstr ""
 
-msgid "Listing mode"
+msgid "Listing format"
 msgstr ""
 
 msgid "Executable &first"
@@ -2220,11 +2280,6 @@ msgid ""
 "to use this command"
 msgstr ""
 
-msgid ""
-"Not an xterm or Linux console;\n"
-"the panels cannot be toggled."
-msgstr ""
-
 #, c-format
 msgid "'%s' is not a symbolic link"
 msgstr ""
@@ -2287,9 +2342,6 @@ msgid ""
 "%s"
 msgstr ""
 
-msgid "Cannot read directory contents"
-msgstr ""
-
 msgid "Parameter"
 msgstr ""
 
@@ -2346,9 +2398,6 @@ msgstr ""
 msgid "%o %d %f%m"
 msgstr ""
 
-msgid "file"
-msgstr ""
-
 msgid "files"
 msgstr ""
 
@@ -2365,7 +2414,20 @@ msgstr ""
 msgid " with source mask:"
 msgstr ""
 
-msgid "Cannot make the hardlink"
+#, c-format
+msgid ""
+"Cannot stat hardlink source file \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot create target hardlink \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid "Cannot create target hardlink \"%s\""
 msgstr ""
 
 #, c-format
@@ -2375,7 +2437,7 @@ msgid ""
 msgstr ""
 
 msgid ""
-"Cannot make stable symlinks acrossnon-local filesystems:\n"
+"Cannot make stable symlinks across non-local filesystems:\n"
 "\n"
 "Option Stable Symlinks will be disabled"
 msgstr ""
@@ -2386,10 +2448,23 @@ msgid ""
 "%s"
 msgstr ""
 
-msgid "Ski&p all"
+#, c-format
+msgid ""
+"\"%s\"\n"
+"and\n"
+"\"%s\"\n"
+"are the same directory"
 msgstr ""
 
-msgid "&Retry"
+#, c-format
+msgid ""
+"\"%s\"\n"
+"and\n"
+"\"%s\"\n"
+"are the same file"
+msgstr ""
+
+msgid "Ski&p all"
 msgstr ""
 
 #, c-format
@@ -2410,16 +2485,14 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Cannot stat file \"%s\"\n"
+"Cannot remove file \"%s\"\n"
 "%s"
 msgstr ""
 
 #, c-format
 msgid ""
-"\"%s\"\n"
-"and\n"
-"\"%s\"\n"
-"are the same file"
+"Cannot stat file \"%s\"\n"
+"%s"
 msgstr ""
 
 #, c-format
@@ -2434,18 +2507,6 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Cannot remove file \"%s\"\n"
-"%s"
-msgstr ""
-
-#, c-format
-msgid ""
-"Cannot delete file \"%s\"\n"
-"%s"
-msgstr ""
-
-#, c-format
-msgid ""
 "Cannot remove directory \"%s\"\n"
 "%s"
 msgstr ""
@@ -2454,6 +2515,21 @@ msgstr ""
 msgid ""
 "Cannot overwrite directory \"%s\"\n"
 "%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot overwrite file \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot move directory \"%s\" to \"%s\"\n"
+"%s"
+msgstr ""
+
+msgid "Cannot operate on \"..\"!"
 msgstr ""
 
 #, c-format
@@ -2583,30 +2659,7 @@ msgid ""
 msgstr ""
 
 #, c-format
-msgid ""
-"\"%s\"\n"
-"and\n"
-"\"%s\"\n"
-"are the same directory"
-msgstr ""
-
-#, c-format
-msgid ""
-"Cannot overwrite file \"%s\"\n"
-"%s"
-msgstr ""
-
-#, c-format
-msgid ""
-"Cannot move directory \"%s\" to \"%s\"\n"
-"%s"
-msgstr ""
-
-#, c-format
 msgid "Directories: %zu, total size: %s"
-msgstr ""
-
-msgid "Cannot operate on \"..\"!"
 msgstr ""
 
 msgid "Sorry, I could not put the job in background"
@@ -2638,18 +2691,13 @@ msgstr ""
 msgid "%ld B/s"
 msgstr ""
 
-msgid "Target file already exists!"
+msgid "New     :"
 msgstr ""
 
-#, c-format
-msgid "New     : %s, size %s"
-msgstr "ახალი   : %s, ზომა %s"
+msgid "Existing:"
+msgstr ""
 
-#, c-format
-msgid "Existing: %s, size %s"
-msgstr "არსებული: %s, ზომა %s"
-
-msgid "Overwrite this target?"
+msgid "Overwrite this file?"
 msgstr ""
 
 msgid "A&ppend"
@@ -2658,14 +2706,20 @@ msgstr ""
 msgid "&Reget"
 msgstr ""
 
-msgid "Overwrite all targets?"
+msgid "Overwrite all files?"
 msgstr ""
 
-msgid "&Update"
+msgid "Don't overwrite with &zero length file"
 msgstr ""
 
-msgid "If &size differs"
-msgstr "თუ &ზომა განსხვავებულია"
+msgid "&Older"
+msgstr ""
+
+msgid "S&maller"
+msgstr ""
+
+msgid "&Size differs"
+msgstr ""
 
 msgid "File exists"
 msgstr ""
@@ -2808,6 +2862,15 @@ msgstr ""
 msgid "Finished (ignored %zu directory)"
 msgid_plural "Finished (ignored %zu directories)"
 msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid "Find File: \"%s\". Content: \"%s\""
+msgstr ""
+
+#, c-format
+msgid "Find File: \"%s\""
+msgstr ""
 
 msgid "Searching"
 msgstr ""
@@ -2966,6 +3029,7 @@ msgstr ""
 msgid " (%lu block)"
 msgid_plural " (%lu blocks)"
 msgstr[0] ""
+msgstr[1] ""
 
 #, c-format
 msgid "Owner:      %s/%s"
@@ -3031,7 +3095,7 @@ msgstr ""
 msgid "&Info"
 msgstr "&ინფო"
 
-msgid "&Listing mode..."
+msgid "&Listing format..."
 msgstr ""
 
 msgid "&Sort order..."
@@ -3145,6 +3209,9 @@ msgstr ""
 msgid "Command &history"
 msgstr ""
 
+msgid "Viewed/edited files hi&story"
+msgstr ""
+
 msgid "Di&rectory hotlist"
 msgstr ""
 
@@ -3200,6 +3267,7 @@ msgstr ""
 msgid "You have %zu opened screen. Quit anyway?"
 msgid_plural "You have %zu opened screens. Quit anyway?"
 msgstr[0] ""
+msgstr[1] ""
 
 msgid "The Midnight Commander"
 msgstr ""
@@ -3346,6 +3414,7 @@ msgstr ""
 msgid "%s in %d file"
 msgid_plural "%s in %d files"
 msgstr[0] ""
+msgstr[1] ""
 
 msgid "Panelize"
 msgstr "პანელში"
@@ -3366,6 +3435,9 @@ msgid "Unselect"
 msgstr ""
 
 msgid "Do you really want to execute?"
+msgstr ""
+
+msgid "Cannot read directory contents"
 msgstr ""
 
 msgid "User supplied format looks invalid, reverting to default."
@@ -3453,48 +3525,6 @@ msgstr "დირწაშლ"
 msgid ""
 "Cannot write to the %s file:\n"
 "%s\n"
-msgstr ""
-
-msgid "Debug"
-msgstr ""
-
-msgid "ERROR:"
-msgstr "შეცდომა:"
-
-msgid "True:"
-msgstr ""
-
-msgid "False:"
-msgstr ""
-
-msgid "Error calling program"
-msgstr "შეცდომა პროგრამის გამოძახებისას"
-
-msgid "Warning -- ignoring file"
-msgstr ""
-
-#, c-format
-msgid ""
-"File %s is not owned by root or you or is world writable.\n"
-"Using it may compromise your security"
-msgstr ""
-
-msgid "Format error on file Extensions File"
-msgstr ""
-
-#, c-format
-msgid "The %%var macro has no default"
-msgstr ""
-
-#, c-format
-msgid "The %%var macro has no variable"
-msgstr ""
-
-#, c-format
-msgid "No suitable entries found in %s"
-msgstr ""
-
-msgid "User menu"
 msgstr ""
 
 msgid "Help file format error\n"
@@ -3624,6 +3654,9 @@ msgstr ""
 msgid "Using the ncursesw library\n"
 msgstr ""
 
+msgid "With builtin Editor and Aspell support\n"
+msgstr ""
+
 msgid "With builtin Editor\n"
 msgstr ""
 
@@ -3663,8 +3696,11 @@ msgstr "ვირტუალური ფაილური სისტემ�
 msgid "Data types:"
 msgstr ""
 
-msgid "Root directory:"
-msgstr "სათაო დირექტორია:"
+msgid "Home directory:"
+msgstr ""
+
+msgid "Profile root directory:"
+msgstr ""
 
 msgid "System data"
 msgstr "სისტემური მონაცემები"
@@ -3685,6 +3721,48 @@ msgid "User data"
 msgstr "სამომხმარებლო მონაცემები"
 
 msgid "Cache directory:"
+msgstr ""
+
+msgid "Debug"
+msgstr ""
+
+msgid "ERROR:"
+msgstr "შეცდომა:"
+
+msgid "True:"
+msgstr ""
+
+msgid "False:"
+msgstr ""
+
+msgid "Error calling program"
+msgstr "შეცდომა პროგრამის გამოძახებისას"
+
+msgid "Warning -- ignoring file"
+msgstr ""
+
+#, c-format
+msgid ""
+"File %s is not owned by root or you or is world writable.\n"
+"Using it may compromise your security"
+msgstr ""
+
+msgid "Format error on file Extensions File"
+msgstr ""
+
+#, c-format
+msgid "The %%var macro has no default"
+msgstr ""
+
+#, c-format
+msgid "The %%var macro has no variable"
+msgstr ""
+
+#, c-format
+msgid "No suitable entries found in %s"
+msgstr ""
+
+msgid "User menu"
 msgstr ""
 
 #, c-format
@@ -3955,6 +4033,10 @@ msgid "sftp: Failure establishing SSH session"
 msgstr ""
 
 msgid "sftp: No file handler data present for reading file"
+msgstr ""
+
+#, c-format
+msgid "sftp: socket error: %s"
 msgstr ""
 
 #, c-format

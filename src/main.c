@@ -1,7 +1,7 @@
 /*
    Main program for the Midnight Commander
 
-   Copyright (C) 1994-2017
+   Copyright (C) 1994-2019
    Free Software Foundation, Inc.
 
    Written by:
@@ -234,6 +234,8 @@ main (int argc, char *argv[])
     /* do this before args parsing */
     str_init_strings (NULL);
 
+    mc_setup_run_mode (argv);   /* are we mc? editor? viewer? etc... */
+
     if (!mc_args_parse (&argc, &argv, "mc", &mcerror))
     {
       startup_exit_falure:
@@ -329,10 +331,6 @@ main (int argc, char *argv[])
     handle_console (CONSOLE_INIT);
 
 #ifdef ENABLE_SUBSHELL
-    /* Don't use subshell when invoked as viewer or editor */
-    if (mc_global.mc_run_mode != MC_RUN_FULL)
-        mc_global.tty.use_subshell = FALSE;
-
     if (mc_global.tty.use_subshell)
         subshell_get_console_attributes ();
 #endif /* ENABLE_SUBSHELL */

@@ -1,7 +1,7 @@
 /*
    Directory hotlist -- for the Midnight Commander
 
-   Copyright (C) 1994-2017
+   Copyright (C) 1994-2019
    Free Software Foundation, Inc.
 
    Written by:
@@ -449,9 +449,9 @@ hotlist_run_cmd (int action)
                 fill_listbox (list);
                 return 0;
             }
-            /* Fall through - go up */
+            MC_FALLTHROUGH;     /* go up */
         }
-        /* Fall through if list empty - just go up */
+        MC_FALLTHROUGH;         /* if list empty - just go up */
 
     case B_UP_GROUP:
         {
@@ -466,7 +466,7 @@ hotlist_run_cmd (int action)
 #ifdef ENABLE_VFS
     case B_FREE_ALL_VFS:
         vfs_expire (TRUE);
-        /* fall through */
+        MC_FALLTHROUGH;
 
     case B_REFRESH_VFS:
         listbox_remove_list (l_hotlist);
@@ -581,8 +581,34 @@ hotlist_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void 
         return hotlist_handle_key (h, parm);
 
     case MSG_POST_KEY:
-        /* always stay on hotlist */
-        widget_select (h == hotlist_dlg ? WIDGET (l_hotlist) : WIDGET (l_movelist));
+        /*
+         * The code here has two purposes:
+         *
+         * (1) Always stay on the hotlist.
+         *
+         * Activating a button using its hotkey (and even pressing ENTER, as
+         * there's a "default button") moves the focus to the button. But we
+         * want to stay on the hotlist, to be able to use the usual keys (up,
+         * down, etc.). So we do `widget_select (lst)`.
+         *
+         * (2) Refresh the hotlist.
+         *
+         * We may have run a command that changed the contents of the list.
+         * We therefore need to refresh it. So we do `widget_redraw (lst)`.
+         */
+        {
+            Widget *lst;
+
+            lst = WIDGET (h == hotlist_dlg ? l_hotlist : l_movelist);
+
+            /* widget_select() already redraws the widget, but since it's a
+             * no-op if the widget is already selected ("focused"), we have
+             * to call widget_redraw() separately. */
+            if (!widget_get_state (lst, WST_FOCUSED))
+                widget_select (lst);
+            else
+                widget_redraw (lst);
+        }
         return MSG_HANDLED;
 
     case MSG_RESIZE:
@@ -1263,7 +1289,7 @@ hot_next_token (void)
         if (c == '\n')
             goto again;
 
-        /* fall through; it is taken as normal character */
+        MC_FALLTHROUGH;         /* it is taken as normal character */
 
     default:
         do

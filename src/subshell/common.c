@@ -1,7 +1,7 @@
 /*
    Concurrent shell support for the Midnight Commander
 
-   Copyright (C) 1994-2017
+   Copyright (C) 1994-2019
    Free Software Foundation, Inc.
 
    Written by:
@@ -63,6 +63,12 @@
 #include <errno.h>
 #include <string.h>
 #include <signal.h>
+#ifdef HAVE_SYS_SELECT_H
+#include <sys/select.h>
+#else
+#include <sys/time.h>
+#include <unistd.h>
+#endif
 #include <sys/types.h>
 #include <sys/wait.h>
 #ifdef HAVE_SYS_IOCTL_H
@@ -73,6 +79,20 @@
 #ifdef HAVE_STROPTS_H
 #include <stropts.h>            /* For I_PUSH */
 #endif /* HAVE_STROPTS_H */
+
+#ifdef HAVE_OPENPTY
+/* includes for openpty() */
+#ifdef HAVE_PTY_H
+#include <pty.h>
+#endif
+#ifdef HAVE_UTIL_H
+#include <util.h>
+#endif
+/* <sys/types.h> is a prerequisite of <libutil.h> on FreeBSD 8.0.  */
+#ifdef HAVE_LIBUTIL_H
+#include <libutil.h>
+#endif
+#endif /* HAVE_OPENPTY */
 
 #include "lib/global.h"
 
@@ -193,7 +213,7 @@ write_all (int fd, const void *buf, size_t count)
         {
             if (errno == EINTR)
             {
-                if (mc_global.tty.winch_flag != 0)
+                if (tty_got_winch ())
                     tty_change_screen_size ();
 
                 continue;
@@ -531,7 +551,7 @@ feed_subshell (int how, gboolean fail_on_error)
             /* Despite using SA_RESTART, we still have to check for this */
             if (errno == EINTR)
             {
-                if (mc_global.tty.winch_flag != 0)
+                if (tty_got_winch ())
                     tty_change_screen_size ();
 
                 continue;       /* try all over again */
@@ -558,9 +578,14 @@ feed_subshell (int how, gboolean fail_on_error)
 
             if (bytes <= 0)
             {
+#ifdef PTY_ZEROREAD
+                /* On IBM i, read(1) can return 0 for a non-closed fd */
+                continue;
+#else
                 tcsetattr (STDOUT_FILENO, TCSANOW, &shell_mode);
                 fprintf (stderr, "read (subshell_pty...): %s\r\n", unix_error_string (errno));
                 exit (EXIT_FAILURE);
+#endif
             }
 
             if (how == VISIBLY)
@@ -624,6 +649,8 @@ feed_subshell (int how, gboolean fail_on_error)
 
 /* --------------------------------------------------------------------------------------------- */
 /* pty opening functions */
+
+#ifndef HAVE_OPENPTY
 
 #ifdef HAVE_GRANTPT
 
@@ -778,6 +805,7 @@ pty_open_slave (const char *pty_name)
 }
 #endif /* !HAVE_GRANTPT */
 
+#endif /* !HAVE_OPENPTY */
 
 /* --------------------------------------------------------------------------------------------- */
 /**
@@ -869,22 +897,11 @@ init_subshell_precmd (char *precmd, size_t buff_size)
         break;
 
     case SHELL_FISH:
-        /* We also want a fancy user@host:cwd prompt here, but fish makes it very easy to also
-         * use colours, which is what we will do. But first here is a simpler, uncoloured version:
-         * "function fish_prompt; "
-         *     "echo (whoami)@(hostname -s):(pwd)\\$\\ ; "
-         *     "echo \"$PWD\">&%d; "
-         *     "kill -STOP %%self; "
-         * "end\n",
-         *
-         * TODO: fish prompt is shown when panel is hidden (Ctrl-O), but not when it is visible.
-         * Find out how to fix this.
-         */
         g_snprintf (precmd, buff_size,
                     " if not functions -q fish_prompt_mc;"
+                    "functions -e fish_right_prompt;"
                     "functions -c fish_prompt fish_prompt_mc; end;"
                     "function fish_prompt;"
-                    "echo (whoami)@(hostname -s):(set_color $fish_color_cwd)(pwd)(set_color normal)\\$\\ ; "
                     "echo \"$PWD\">&%d; fish_prompt_mc; kill -STOP %%self; end\n",
                     subshell_pipe[WRITE]);
         break;
@@ -908,8 +925,10 @@ init_subshell_precmd (char *precmd, size_t buff_size)
  * replaced by the backslash-escape sequence \0nnn, where "nnn" is the
  * numeric value of the character converted to octal number.
  * 
- *   cd "`printf "%b" 'ABC\0nnnDEF\0nnnXYZ'`"
+ *   cd "`printf '%b' 'ABC\0nnnDEF\0nnnXYZ'`"
  *
+ * N.B.: Use single quotes for conversion specifier to work around
+ *       tcsh 6.20+ parser breakage, see ticket #3852 for the details.
  */
 
 static GString *
@@ -921,7 +940,7 @@ subshell_name_quote (const char *s)
 
     if (mc_global.shell->type == SHELL_FISH)
     {
-        quote_cmd_start = "(printf \"%b\" '";
+        quote_cmd_start = "(printf '%b' '";
         quote_cmd_end = "')";
     }
     /* TODO: When BusyBox printf is fixed, get rid of this "else if", see
@@ -933,7 +952,7 @@ subshell_name_quote (const char *s)
        } */
     else
     {
-        quote_cmd_start = "\"`printf \"%b\" '";
+        quote_cmd_start = "\"`printf '%b' '";
         quote_cmd_end = "'`\"";
     }
 
@@ -1019,6 +1038,15 @@ init_subshell (void)
 
         /* FIXME: We may need to open a fresh pty each time on SVR4 */
 
+#ifdef HAVE_OPENPTY
+        if (openpty (&mc_global.tty.subshell_pty, &subshell_pty_slave, NULL, NULL, NULL))
+        {
+            fprintf (stderr, "Cannot open master and slave sides of pty: %s\n",
+                     unix_error_string (errno));
+            mc_global.tty.use_subshell = FALSE;
+            return;
+        }
+#else
         mc_global.tty.subshell_pty = pty_open_master (pty_name);
         if (mc_global.tty.subshell_pty == -1)
         {
@@ -1034,6 +1062,7 @@ init_subshell (void)
             mc_global.tty.use_subshell = FALSE;
             return;
         }
+#endif /* HAVE_OPENPTY */
 
         /* Create a pipe for receiving the subshell's CWD */
 
@@ -1114,16 +1143,16 @@ invoke_subshell (const char *command, int how, vfs_path_t ** new_dir_vpath)
 
     /* Make the subshell change to MC's working directory */
     if (new_dir_vpath != NULL)
-        do_subshell_chdir (subshell_get_cwd_from_current_panel (), TRUE);
+        do_subshell_chdir (subshell_get_cwd (), TRUE);
 
     if (command == NULL)        /* The user has done "C-o" from MC */
     {
         if (subshell_state == INACTIVE)
         {
             subshell_state = ACTIVE;
-            /* FIXME: possibly take out this hack; the user can
-               re-play it by hitting C-hyphen a few times! */
-            if (subshell_ready)
+
+            /* FIXME: possibly take out this hack; the user can re-play it by hitting C-hyphen a few times! */
+            if (subshell_ready && mc_global.mc_run_mode == MC_RUN_FULL)
                 write_all (mc_global.tty.subshell_pty, " \b", 2);       /* Hack to make prompt reappear */
         }
     }
@@ -1144,7 +1173,7 @@ invoke_subshell (const char *command, int how, vfs_path_t ** new_dir_vpath)
     {
         const char *pcwd;
 
-        pcwd = vfs_translate_path (vfs_path_as_str (subshell_get_cwd_from_current_panel ()));
+        pcwd = vfs_translate_path (vfs_path_as_str (subshell_get_cwd ()));
         if (strcmp (subshell_cwd, pcwd) != 0)
             *new_dir_vpath = vfs_path_from_str (subshell_cwd);  /* Make MC change to the subshell's CWD */
     }
@@ -1188,7 +1217,7 @@ read_subshell_prompt (void)
         {
             if (errno == EINTR)
             {
-                if (mc_global.tty.winch_flag != 0)
+                if (tty_got_winch ())
                     tty_change_screen_size ();
 
                 continue;
@@ -1270,7 +1299,7 @@ do_subshell_chdir (const vfs_path_t * vpath, gboolean update_prompt)
 {
     char *pcwd;
 
-    pcwd = vfs_path_to_str_flags (subshell_get_cwd_from_current_panel (), 0, VPF_RECODE);
+    pcwd = vfs_path_to_str_flags (subshell_get_cwd (), 0, VPF_RECODE);
 
     if (!(subshell_state == INACTIVE && strcmp (subshell_cwd, pcwd) != 0))
     {
@@ -1341,9 +1370,7 @@ do_subshell_chdir (const vfs_path_t * vpath, gboolean update_prompt)
         {
             char *cwd;
 
-            cwd =
-                vfs_path_to_str_flags (subshell_get_cwd_from_current_panel (), 0,
-                                       VPF_STRIP_PASSWORD);
+            cwd = vfs_path_to_str_flags (subshell_get_cwd (), 0, VPF_STRIP_PASSWORD);
             vfs_print_message (_("Warning: Cannot change to %s.\n"), cwd);
             g_free (cwd);
         }

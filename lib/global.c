@@ -1,7 +1,7 @@
 /*
    Global structure for some library-related variables
 
-   Copyright (C) 2009-2017
+   Copyright (C) 2009-2019
    Free Software Foundation, Inc.
 
    Written by:
@@ -104,8 +104,7 @@ mc_global_t mc_global = {
         .disable_colors = FALSE,
         .ugly_line_drawing = FALSE,
         .old_mouse = FALSE,
-        .alternate_plus_minus = FALSE,
-        .winch_flag = 0
+        .alternate_plus_minus = FALSE
     },
 
     .vfs =

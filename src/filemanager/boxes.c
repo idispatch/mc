@@ -1,7 +1,7 @@
 /*
    Some misc dialog boxes for the program.
 
-   Copyright (C) 1994-2017
+   Copyright (C) 1994-2019
    Free Software Foundation, Inc.
 
    Written by:
@@ -72,7 +72,7 @@
 
 #include "command.h"            /* For cmdline */
 #include "dir.h"
-#include "panel.h"              /* LIST_TYPES */
+#include "panel.h"              /* LIST_FORMATS */
 #include "tree.h"
 #include "layout.h"             /* for get_nth_panel_name proto */
 #include "midnight.h"           /* current_panel */
@@ -95,13 +95,13 @@
 
 static unsigned long configure_old_esc_mode_id, configure_time_out_id;
 
-/* Index in list_types[] for "brief" */
-static const int panel_listing_brief_idx = 1;
-/* Index in list_types[] for "user defined" */
-static const int panel_listing_user_idx = 3;
+/* Index in list_formats[] for "brief" */
+static const int panel_list_brief_idx = 1;
+/* Index in list_formats[] for "user defined" */
+static const int panel_list_user_idx = 3;
 
 static char **status_format;
-static unsigned long panel_listing_types_id, panel_user_format_id, panel_brief_cols_id;
+static unsigned long panel_list_formats_id, panel_user_format_id, panel_brief_cols_id;
 static unsigned long mini_user_status_id, mini_user_format_id;
 
 #ifdef HAVE_CHARSET
@@ -279,7 +279,7 @@ panel_listing_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm,
     switch (msg)
     {
     case MSG_NOTIFY:
-        if (sender != NULL && sender->id == panel_listing_types_id)
+        if (sender != NULL && sender->id == panel_list_formats_id)
         {
             WCheck *ch;
             WInput *in1, *in2, *in3;
@@ -294,8 +294,8 @@ panel_listing_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm,
             input_update (in1, FALSE);
             input_update (in2, FALSE);
             input_update (in3, FALSE);
-            widget_disable (WIDGET (in1), RADIO (sender)->sel != panel_listing_user_idx);
-            widget_disable (WIDGET (in2), RADIO (sender)->sel != panel_listing_brief_idx);
+            widget_disable (WIDGET (in1), RADIO (sender)->sel != panel_list_user_idx);
+            widget_disable (WIDGET (in2), RADIO (sender)->sel != panel_list_brief_idx);
             return MSG_HANDLED;
         }
 
@@ -314,7 +314,7 @@ panel_listing_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm,
             {
                 WRadio *r;
 
-                r = RADIO (dlg_find_by_id (h, panel_listing_types_id));
+                r = RADIO (dlg_find_by_id (h, panel_list_formats_id));
                 widget_disable (WIDGET (in), TRUE);
                 input_assign_text (in, status_format[r->sel]);
             }
@@ -428,7 +428,7 @@ jobs_fill_listbox (WListbox * list)
     static const char *state_str[2] = { "", "" };
     TaskList *tl;
 
-    if (state_str[0] == '\0')
+    if (state_str[0][0] == '\0')
     {
         state_str[0] = _("Running");
         state_str[1] = _("Stopped");
@@ -546,8 +546,8 @@ configure_box (void)
                     QUICK_CHECKBOX (N_("Rotating d&ash"), &nice_rotating_dash, NULL),
                     QUICK_CHECKBOX (N_("Cd follows lin&ks"), &mc_global.vfs.cd_symlinks, NULL),
                     QUICK_CHECKBOX (N_("Sa&fe delete"), &safe_delete, NULL),
+                    QUICK_CHECKBOX (N_("Safe overwrite"), &safe_overwrite, NULL),       /* w/o hotkey */
                     QUICK_CHECKBOX (N_("A&uto save setup"), &auto_save_setup, NULL),
-                    QUICK_SEPARATOR (FALSE),
                     QUICK_SEPARATOR (FALSE),
                     QUICK_SEPARATOR (FALSE),
                 QUICK_STOP_GROUPBOX,
@@ -632,7 +632,7 @@ panel_options_box (void)
     gboolean simple_swap;
 
     simple_swap = mc_config_get_bool (mc_global.main_config, CONFIG_PANELS_SECTION,
-                                      "simple_swap", FALSE) ? 1 : 0;
+                                      "simple_swap", FALSE);
     {
         const char *qsearch_options[] = {
             N_("Case &insensitive"),
@@ -715,28 +715,12 @@ panel_listing_box (WPanel * panel, int num, char **userp, char **minip, gboolean
                    int *brief_cols)
 {
     int result = -1;
-    char *section = NULL;
+    const char *p = NULL;
 
     if (panel == NULL)
     {
-        const char *p;
-        size_t i;
-
         p = get_nth_panel_name (num);
-        panel = g_new (WPanel, 1);
-        panel->list_type = list_full;
-        panel->user_format = g_strdup (DEFAULT_USER_FORMAT);
-        panel->user_mini_status = FALSE;
-        for (i = 0; i < LIST_TYPES; i++)
-            panel->user_status_format[i] = g_strdup (DEFAULT_USER_FORMAT);
-        section = g_strconcat ("Temporal:", p, (char *) NULL);
-        if (!mc_config_has_group (mc_global.main_config, section))
-        {
-            g_free (section);
-            section = g_strdup (p);
-        }
-        panel_load_setup (panel, section);
-        g_free (section);
+        panel = panel_empty_new (p);
     }
 
     {
@@ -747,7 +731,7 @@ panel_listing_box (WPanel * panel, int num, char **userp, char **minip, gboolean
         char *mini_user_format = NULL;
 
         /* Controls whether the array strings have been translated */
-        const char *list_types[LIST_TYPES] = {
+        const char *list_formats[LIST_FORMATS] = {
             N_("&Full file list"),
             N_("&Brief file list:"),
             N_("&Long file list"),
@@ -757,7 +741,7 @@ panel_listing_box (WPanel * panel, int num, char **userp, char **minip, gboolean
         quick_widget_t quick_widgets[] = {
             /* *INDENT-OFF* */
             QUICK_START_COLUMNS,
-                QUICK_RADIO (LIST_TYPES, list_types, &result, &panel_listing_types_id),
+                QUICK_RADIO (LIST_FORMATS, list_formats, &result, &panel_list_formats_id),
             QUICK_NEXT_COLUMN,
                 QUICK_SEPARATOR (FALSE),
                 QUICK_LABELED_INPUT (_ ("columns"), input_label_right, panel_brief_cols_in,
@@ -768,7 +752,7 @@ panel_listing_box (WPanel * panel, int num, char **userp, char **minip, gboolean
                          &panel_user_format_id, FALSE, FALSE, INPUT_COMPLETE_NONE),
             QUICK_SEPARATOR (TRUE),
             QUICK_CHECKBOX (N_("User &mini status"), &mini_user_status, &mini_user_status_id),
-            QUICK_INPUT (panel->user_status_format[panel->list_type], "mini_input",
+            QUICK_INPUT (panel->user_status_format[panel->list_format], "mini_input",
                          &mini_user_format, &mini_user_format_id, FALSE, FALSE, INPUT_COMPLETE_NONE),
             QUICK_BUTTONS_OK_CANCEL,
             QUICK_END
@@ -777,20 +761,20 @@ panel_listing_box (WPanel * panel, int num, char **userp, char **minip, gboolean
 
         quick_dialog_t qdlg = {
             -1, -1, 48,
-            N_("Listing mode"), "[Listing Mode...]",
+            N_("Listing format"), "[Listing Format...]",
             quick_widgets, panel_listing_callback, NULL
         };
 
         mini_user_status = panel->user_mini_status;
-        result = panel->list_type;
+        result = panel->list_format;
         status_format = panel->user_status_format;
 
         g_snprintf (panel_brief_cols_in, sizeof (panel_brief_cols_in), "%d", panel->brief_cols);
 
-        if ((int) panel->list_type != panel_listing_brief_idx)
+        if ((int) panel->list_format != panel_list_brief_idx)
             quick_widgets[4].state = WST_DISABLED;
 
-        if ((int) panel->list_type != panel_listing_user_idx)
+        if ((int) panel->list_format != panel_list_user_idx)
             quick_widgets[6].state = WST_DISABLED;
 
         if (!mini_user_status)
@@ -817,12 +801,12 @@ panel_listing_box (WPanel * panel, int num, char **userp, char **minip, gboolean
         }
     }
 
-    if (section != NULL)
+    if (p != NULL)
     {
         int i;
 
         g_free (panel->user_format);
-        for (i = 0; i < LIST_TYPES; i++)
+        for (i = 0; i < LIST_FORMATS; i++)
             g_free (panel->user_status_format[i]);
         g_free (panel);
     }
@@ -959,9 +943,9 @@ display_bits_box (void)
         mc_global.eight_bit_clean = current_mode < 3;
         mc_global.full_eight_bits = current_mode < 2;
 #ifndef HAVE_SLANG
-        meta (stdscr, mc_global.eight_bit_clean);
+        tty_display_8bit (mc_global.eight_bit_clean);
 #else
-        SLsmg_Display_Eight_Bit = mc_global.full_eight_bits ? 128 : 160;
+        tty_display_8bit (mc_global.full_eight_bits);
 #endif
         use_8th_bit_as_meta = !new_meta;
     }
@@ -1076,7 +1060,7 @@ tree_box (const char *current_dir)
 
 #ifdef ENABLE_VFS
 void
-configure_vfs (void)
+configure_vfs_box (void)
 {
     char buffer2[BUF_TINY];
 #ifdef ENABLE_VFS_FTP
@@ -1167,7 +1151,7 @@ configure_vfs (void)
 /* --------------------------------------------------------------------------------------------- */
 
 char *
-cd_dialog (void)
+cd_box (void)
 {
     const Widget *w = CONST_WIDGET (current_panel);
     char *my_str;
@@ -1190,8 +1174,8 @@ cd_dialog (void)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-symlink_dialog (const vfs_path_t * existing_vpath, const vfs_path_t * new_vpath,
-                char **ret_existing, char **ret_new)
+symlink_box (const vfs_path_t * existing_vpath, const vfs_path_t * new_vpath,
+             char **ret_existing, char **ret_new)
 {
     quick_widget_t quick_widgets[] = {
         /* *INDENT-OFF* */
@@ -1224,7 +1208,7 @@ symlink_dialog (const vfs_path_t * existing_vpath, const vfs_path_t * new_vpath,
 
 #ifdef ENABLE_BACKGROUND
 void
-jobs_cmd (void)
+jobs_box (void)
 {
     struct
     {

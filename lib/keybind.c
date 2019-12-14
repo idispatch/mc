@@ -1,7 +1,7 @@
 /*
    Definitions of key bindings.
 
-   Copyright (C) 2005-2017
+   Copyright (C) 2005-2019
    Free Software Foundation, Inc.
 
    Written by:
@@ -94,6 +94,7 @@ static name_keymap_t command_names[] = {
 #ifdef HAVE_CHARSET
     {"SelectCodepage", CK_SelectCodepage},
 #endif
+    {"EditorViewerHistory", CK_EditorViewerHistory},
     {"History", CK_History},
     {"HistoryNext", CK_HistoryNext},
     {"HistoryPrev", CK_HistoryPrev},
@@ -147,7 +148,6 @@ static name_keymap_t command_names[] = {
     {"ViewFiltered", CK_ViewFiltered},
     {"Find", CK_Find},
     {"DirSize", CK_DirSize},
-    {"PanelListingSwitch", CK_PanelListingSwitch},
     {"CompareDirs", CK_CompareDirs},
 #ifdef USE_DIFF_VIEW
     {"CompareFiles", CK_CompareFiles},
@@ -179,7 +179,7 @@ static name_keymap_t command_names[] = {
     {"OptionsLayout", CK_OptionsLayout},
     {"OptionsAppearance", CK_OptionsAppearance},
     {"Link", CK_Link},
-    {"PanelListingChange", CK_PanelListingChange},
+    {"SetupListingFormat", CK_SetupListingFormat},
     {"PanelListing", CK_PanelListing},
 #ifdef LISTMODE_EDITOR
     {"ListMode", CK_ListMode}.
@@ -234,6 +234,7 @@ static name_keymap_t command_names[] = {
     {"SortBySize", CK_SortBySize},
     {"SortByMTime", CK_SortByMTime},
     {"CdParentSmart", CK_CdParentSmart},
+    {"CycleListingFormat", CK_CycleListingFormat},
 
     /* dialog */
     {"Ok", CK_Ok},
@@ -345,6 +346,7 @@ static name_keymap_t command_names[] = {
     {"SearchBackward", CK_SearchBackward},
     {"SearchForwardContinue", CK_SearchForwardContinue},
     {"SearchBackwardContinue", CK_SearchBackwardContinue},
+    {"SearchOppositeContinue", CK_SearchOppositeContinue},
 
 #ifdef USE_DIFF_VIEW
     /* diff viewer */

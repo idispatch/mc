@@ -1,7 +1,7 @@
 /*
    libmc - check mcconfig submodule. Get full paths to user's config files.
 
-   Copyright (C) 2011-2017
+   Copyright (C) 2011-2019
    Free Software Foundation, Inc.
 
    Written by:
@@ -61,7 +61,7 @@ setup (void)
 #endif
     str_init_strings ("UTF-8");
     vfs_init ();
-    init_localfs ();
+    vfs_init_localfs ();
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -93,7 +93,7 @@ static const struct test_user_config_paths_ds
         MC_FHL_INI_FILE
     },
     { /* 2. */
-        CONF_DATA,
+        CONF_MAIN,
         MC_HOTLIST_FILE
     },
     { /* 3. */

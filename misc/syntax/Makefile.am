@@ -35,6 +35,7 @@ SYNTAXFILES =			\
 	glsl.syntax		\
 	go.syntax		\
 	haskell.syntax		\
+	hive.syntax		\
 	html.syntax		\
 	idl.syntax		\
 	ini.syntax		\
@@ -50,7 +51,9 @@ SYNTAXFILES =			\
 	m4.syntax		\
 	mail.syntax		\
 	makefile.syntax		\
+	markdown.syntax		\
 	ml.syntax		\
+	meson.syntax		\
 	named.syntax		\
 	nemerle.syntax		\
 	nroff.syntax		\
@@ -64,10 +67,12 @@ SYNTAXFILES =			\
 	povray.syntax		\
 	procmail.syntax		\
 	properties.syntax	\
+	protobuf.syntax		\
 	puppet.syntax		\
 	python.syntax		\
 	r.syntax		\
 	ruby.syntax		\
+	rust.syntax		\
 	sh.syntax		\
 	slang.syntax		\
 	smalltalk.syntax	\
@@ -78,11 +83,13 @@ SYNTAXFILES =			\
 	syntax.syntax		\
 	tcl.syntax		\
 	texinfo.syntax		\
+	ts.syntax		\
 	tt.syntax		\
 	unknown.syntax		\
 	verilog.syntax		\
 	vhdl.syntax		\
 	xml.syntax		\
+	yabasic.syntax		\
 	yaml.syntax		\
 	yum-repo.syntax		\
 	yxx.syntax

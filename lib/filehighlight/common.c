@@ -2,7 +2,7 @@
    File highlight plugin.
    Interface functions
 
-   Copyright (C) 2009-2017
+   Copyright (C) 2009-2019
    Free Software Foundation, Inc.
 
    Written by:

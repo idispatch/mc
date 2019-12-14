@@ -1,7 +1,7 @@
 /*
    Dialog box features module for the Midnight Commander
 
-   Copyright (C) 1994-2017
+   Copyright (C) 1994-2019
    Free Software Foundation, Inc.
 
    This file is part of the Midnight Commander.
@@ -42,6 +42,8 @@
 #include "lib/strutil.h"
 #include "lib/fileloc.h"        /* MC_HISTORY_FILE */
 #include "lib/event.h"          /* mc_event_raise() */
+#include "lib/util.h"           /* MC_PTR_FREE */
+#include "lib/mcconfig.h"       /* num_history_items_recorded */
 
 #include "lib/widget.h"
 #include "lib/widget/mouse.h"
@@ -93,7 +95,7 @@ dlg_get_next_or_prev_of (const GList * list, gboolean next)
 {
     GList *l = NULL;
 
-    if (list != NULL && list->data != NULL)
+    if (list != NULL)
     {
         const WDialog *owner = CONST_WIDGET (list->data)->owner;
 
@@ -229,6 +231,10 @@ static cb_ret_t
 dlg_execute_cmd (WDialog * h, long command)
 {
     cb_ret_t ret = MSG_HANDLED;
+
+    if (send_message (h, NULL, MSG_ACTION, command, NULL) == MSG_HANDLED)
+        return MSG_HANDLED;
+
     switch (command)
     {
     case CK_Ok:
@@ -298,13 +304,8 @@ dlg_handle_key (WDialog * h, int d_key)
     long command;
 
     command = keybind_lookup_keymap_command (dialog_map, d_key);
-
-    if (command == CK_IgnoreKey)
-        return MSG_NOT_HANDLED;
-
-    if (send_message (h, NULL, MSG_ACTION, command, NULL) == MSG_HANDLED
-        || dlg_execute_cmd (h, command) == MSG_HANDLED)
-        return MSG_HANDLED;
+    if (command != CK_IgnoreKey)
+        return dlg_execute_cmd (h, command);
 
     return MSG_NOT_HANDLED;
 }
@@ -351,6 +352,9 @@ dlg_mouse_event (WDialog * h, Gpm_Event * event)
         if (mou != MOU_UNHANDLED)
             return mou;
     }
+
+    if (h->widgets == NULL)
+        return MOU_UNHANDLED;
 
     /* send the event to widgets in reverse Z-order */
     p = g_list_last (h->widgets);
@@ -516,7 +520,7 @@ frontend_dlg_run (WDialog * h)
     {
         int d_key;
 
-        if (mc_global.tty.winch_flag != 0)
+        if (tty_got_winch ())
             dialog_change_screen_size ();
 
         if (is_idle ())
@@ -601,36 +605,6 @@ dlg_widget_set_position (gpointer data, gpointer user_data)
 }
 
 /* --------------------------------------------------------------------------------------------- */
-
-static void
-dlg_adjust_position (widget_pos_flags_t pos_flags, int *y, int *x, int *lines, int *cols)
-{
-    if ((pos_flags & WPOS_FULLSCREEN) != 0)
-    {
-        *y = 0;
-        *x = 0;
-        *lines = LINES;
-        *cols = COLS;
-    }
-    else
-    {
-        if ((pos_flags & WPOS_CENTER_HORZ) != 0)
-            *x = (COLS - *cols) / 2;
-
-        if ((pos_flags & WPOS_CENTER_VERT) != 0)
-            *y = (LINES - *lines) / 2;
-
-        if ((pos_flags & WPOS_TRYUP) != 0)
-        {
-            if (*y > 3)
-                *y -= 2;
-            else if (*y == 3)
-                *y = 2;
-        }
-    }
-}
-
-/* --------------------------------------------------------------------------------------------- */
 /*** public functions ****************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
@@ -653,6 +627,7 @@ dlg_default_repaint (WDialog * h)
 
     if (h->title != NULL)
     {
+        /* TODO: truncate long title */
         tty_setcolor (h->color[DLG_COLOR_TITLE]);
         widget_move (h, space, (wh->cols - str_term_width1 (h->title)) / 2);
         tty_print_string (h->title);
@@ -707,7 +682,7 @@ dlg_set_size (WDialog * h, int lines, int cols)
 {
     int x = 0, y = 0;
 
-    dlg_adjust_position (WIDGET (h)->pos_flags, &y, &x, &lines, &cols);
+    widget_adjust_position (WIDGET (h)->pos_flags, &y, &x, &lines, &cols);
     dlg_set_position (h, y, x, lines, cols);
 }
 
@@ -766,7 +741,7 @@ dlg_create (gboolean modal, int y1, int x1, int lines, int cols, widget_pos_flag
 
     new_d = g_new0 (WDialog, 1);
     w = WIDGET (new_d);
-    dlg_adjust_position (pos_flags, &y1, &x1, &lines, &cols);
+    widget_adjust_position (pos_flags, &y1, &x1, &lines, &cols);
     widget_init (w, y1, x1, lines, cols, (callback != NULL) ? callback : dlg_default_callback,
                  mouse_callback);
     w->pos_flags = pos_flags;
@@ -783,16 +758,7 @@ dlg_create (gboolean modal, int y1, int x1, int lines, int cols, widget_pos_flag
 
     new_d->mouse_status = MOU_UNHANDLED;
 
-    /* Strip existing spaces, add one space before and after the title */
-    if (title != NULL && *title != '\0')
-    {
-        char *t;
-
-        t = g_strstrip (g_strdup (title));
-        if (*t != '\0')
-            new_d->title = g_strdup_printf (" %s ", t);
-        g_free (t);
-    }
+    dlg_set_title (new_d, title);
 
     /* unique name of event group for this dialog */
     new_d->event_group = g_strdup_printf ("%s_%p", MCEVENT_GROUP_DIALOG, (void *) new_d);
@@ -961,19 +927,18 @@ do_refresh (void)
 
     if (fast_refresh)
     {
-        if ((d != NULL) && (d->data != NULL))
+        if (d != NULL)
             dlg_redraw (DIALOG (d->data));
     }
     else
     {
         /* Search first fullscreen dialog */
         for (; d != NULL; d = g_list_next (d))
-            if (d->data != NULL && (WIDGET (d->data)->pos_flags & WPOS_FULLSCREEN) != 0)
+            if ((WIDGET (d->data)->pos_flags & WPOS_FULLSCREEN) != 0)
                 break;
         /* back to top dialog */
         for (; d != NULL; d = g_list_previous (d))
-            if (d->data != NULL)
-                dlg_redraw (DIALOG (d->data));
+            dlg_redraw (DIALOG (d->data));
     }
 }
 
@@ -1059,9 +1024,7 @@ update_cursor (WDialog * h)
 
     if (p != NULL && widget_get_state (WIDGET (h), WST_ACTIVE))
     {
-        Widget *w;
-
-        w = WIDGET (p->data);
+        Widget *w = WIDGET (p->data);
 
         if (!widget_get_state (w, WST_DISABLED) && widget_get_options (w, WOP_WANT_CURSOR))
             send_message (w, NULL, MSG_CURSOR, 0, NULL);
@@ -1146,7 +1109,8 @@ dlg_init (WDialog * h)
     widget_set_state (wh, WST_ACTIVE, TRUE);
     dlg_redraw (h);
     /* focus found widget */
-    widget_set_state (WIDGET (h->current->data), WST_FOCUSED, TRUE);
+    if (h->current != NULL)
+        widget_set_state (WIDGET (h->current->data), WST_FOCUSED, TRUE);
 
     h->ret_value = 0;
 }
@@ -1156,16 +1120,21 @@ dlg_init (WDialog * h)
 void
 dlg_process_event (WDialog * h, int key, Gpm_Event * event)
 {
-    if (key == EV_NONE)
+    switch (key)
     {
+    case EV_NONE:
         if (tty_got_interrupt ())
-            if (send_message (h, NULL, MSG_ACTION, CK_Cancel, NULL) != MSG_HANDLED)
-                dlg_execute_cmd (h, CK_Cancel);
-    }
-    else if (key == EV_MOUSE)
+            dlg_execute_cmd (h, CK_Cancel);
+        break;
+
+    case EV_MOUSE:
         h->mouse_status = dlg_mouse_event (h, event);
-    else
+        break;
+
+    default:
         dlg_key_event (h, key);
+        break;
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1178,7 +1147,7 @@ dlg_run_done (WDialog * h)
 
     if (widget_get_state (WIDGET (h), WST_CLOSED))
     {
-        send_message (h, h->current->data, MSG_END, 0, NULL);
+        send_message (h, h->current == NULL ? NULL : WIDGET (h->current->data), MSG_END, 0, NULL);
         if (!widget_get_state (WIDGET (h), WST_MODAL))
             dialog_switch_remove (h);
     }
@@ -1253,6 +1222,25 @@ dlg_save_history (WDialog * h)
     }
 
     g_free (profile);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+dlg_set_title (WDialog * h, const char *title)
+{
+    MC_PTR_FREE (h->title);
+
+    /* Strip existing spaces, add one space before and after the title */
+    if (title != NULL && title[0] != '\0')
+    {
+        char *t;
+
+        t = g_strstrip (g_strdup (title));
+        if (t[0] != '\0')
+            h->title = g_strdup_printf (" %s ", t);
+        g_free (t);
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */

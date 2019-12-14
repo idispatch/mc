@@ -2,7 +2,7 @@
    Skins engine.
    Work with line draving chars.
 
-   Copyright (C) 2009-2017
+   Copyright (C) 2009-2019
    Free Software Foundation, Inc.
 
    Written by:

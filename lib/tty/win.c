@@ -1,7 +1,7 @@
 /*
    Terminal management xterm and rxvt support
 
-   Copyright (C) 1995-2017
+   Copyright (C) 1995-2019
    Free Software Foundation, Inc.
 
    Written by:
@@ -32,8 +32,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef HAVE_SYS_SELECT_H
+#include <sys/select.h>
+#else
+#include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+#endif
 
 #include "lib/global.h"
 #include "lib/util.h"           /* is_printable() */

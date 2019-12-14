@@ -1,11 +1,13 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Free Software Foundation, Inc.
-# This file is distributed under the same license as the PACKAGE package.
+# This file is distributed under the same license as the mc package.
 #
 # Translators:
+# Jacques Yip <cong-ye@163.com>, 2017
 # Jake Li <gnozil@gmail.com>, 2012
-# liushuyu011 <liushuyu011@gmail.com>, 2016
-# Mingcong Bai <jeffbai@aosc.xyz>, 2016
+# Kenneth Cheung <zjhken01@163.com>, 2018
+# liushuyu011 <liushuyu011@gmail.com>, 2016,2019
+# Mingcong Bai <jeffbai@aosc.xyz>, 2016,2018
 # qingxianhao <qinghao1@foxmail.com>, 2012
 # qingxianhao <qinghao1@foxmail.com>, 2012
 # Slava Zanko <slavazanko@gmail.com>, 2011
@@ -15,9 +17,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2016-11-21 13:19+0300\n"
-"PO-Revision-Date: 2016-08-07 03:19+0000\n"
-"Last-Translator: Mingcong Bai <jeffbai@aosc.xyz>\n"
+"POT-Creation-Date: 2019-09-01 20:04+0300\n"
+"PO-Revision-Date: 2019-03-09 03:13+0000\n"
+"Last-Translator: liushuyu011 <liushuyu011@gmail.com>\n"
 "Language-Team: Chinese (China) (http://www.transifex.com/mc/mc/language/"
 "zh_CN/)\n"
 "Language: zh_CN\n"
@@ -107,6 +109,25 @@ msgstr ""
 "您的旧设置被从 %s 迁移\n"
 "到 %s\n"
 
+msgid ""
+"Number out of range (should be in byte range, 0 <= n <= 0xFF, expressed in "
+"hex)"
+msgstr "数字超出范围 (应在byte范围中, 0<=n <=0xFF, 以十六进制表示)"
+
+msgid "Invalid character"
+msgstr "无效的字符"
+
+msgid "Unmatched quotes character"
+msgstr "没有与之匹配的引号"
+
+#, c-format
+msgid ""
+"Hex pattern error at position %d:\n"
+"%s."
+msgstr ""
+"于 %d 发现十六进制格式错误：\n"
+"%s。"
+
 msgid "Search string not found"
 msgstr "没有找到要搜索的字符串"
 
@@ -151,14 +172,14 @@ msgstr ""
 "无法解析皮肤“%s”。\n"
 "已加载默认皮肤"
 
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Unable to use '%s' skin with true colors support:\n"
 "%s\n"
 "Default skin has been loaded"
 msgstr ""
-"无法在非256色终端上使用\n"
-"支持256色的皮肤“%s”。\n"
+"无法在支持真色彩的终端下使用皮肤“%s”：\n"
+"%s\n"
 "已加载默认皮肤"
 
 #, c-format
@@ -172,16 +193,16 @@ msgstr ""
 "已加载默认皮肤"
 
 msgid "True color not supported with ncurses."
-msgstr ""
+msgstr "ncurses 不支持真色彩模式"
 
 msgid "True color not supported in this slang version."
-msgstr ""
+msgstr "此 slang 版本不支持真色彩模式"
 
 msgid "Your terminal doesn't even seem to support 256 colors."
-msgstr ""
+msgstr "你的终端连 256 色都不支持"
 
 msgid "Set COLORTERM=truecolor if your terminal really supports true colors."
-msgstr ""
+msgstr "如果你的终端真的支持真色彩的话，请设置环境变量 COLORTERM=truecolor"
 
 msgid "Escape"
 msgstr "ESC 键"
@@ -469,6 +490,16 @@ msgstr "Shift 键"
 msgid "The TERM environment variable is unset!\n"
 msgstr "没有设置 TERM 环境变量!\n"
 
+#, fuzzy
+msgid "Cannot create pipe for SIGWINCH"
+msgstr "无法创建管道数据流"
+
+msgid "Cannot configure write end of SIGWINCH pipe"
+msgstr ""
+
+msgid "Cannot configure read end of SIGWINCH pipe"
+msgstr ""
+
 #, c-format
 msgid ""
 "Screen size %dx%d is not supported.\n"
@@ -478,25 +509,25 @@ msgstr ""
 "检查 TERM 环境变量。\n"
 
 msgid "B"
-msgstr ""
+msgstr "B"
 
 msgid "kB"
-msgstr ""
+msgstr "kB"
 
 msgid "KiB"
-msgstr ""
+msgstr "KiB"
 
 msgid "MB"
-msgstr ""
+msgstr "MB"
 
 msgid "MiB"
-msgstr ""
+msgstr "MiB"
 
 msgid "GB"
-msgstr ""
+msgstr "GB"
 
 msgid "GiB"
-msgstr ""
+msgstr "GiB"
 
 msgid "Cannot create pipe descriptor"
 msgstr "无法创建管道标识符"
@@ -577,7 +608,6 @@ msgstr "在 %s 中创建临时文件\n"
 msgid "Temporary files will not be created\n"
 msgstr "无法创建临时文件\n"
 
-#, c-format
 msgid "Press any key to continue..."
 msgstr "按任意键继续..."
 
@@ -646,6 +676,9 @@ msgstr "打印配置选项"
 msgid "Print last working directory to specified file"
 msgstr "将工作目录打印到指定文件"
 
+msgid "<file>"
+msgstr "<file>"
+
 msgid "Enables subshell support (default)"
 msgstr "启用子 shell 支持(默认)"
 
@@ -658,11 +691,17 @@ msgstr "记录 ftp 对话到指定的文件"
 msgid "Set debug level"
 msgstr "设置调试级别"
 
+msgid "<integer>"
+msgstr "<integer>"
+
 msgid "Launches the file viewer on a file"
 msgstr "在文件上启动文件查看器"
 
 msgid "Edit files"
 msgstr "编辑文件"
+
+msgid "<file> ..."
+msgstr "<file> …"
 
 msgid "Forces xterm features"
 msgstr "强制使用 xterm 特性"
@@ -703,6 +742,9 @@ msgstr "请求运行在彩色模式"
 msgid "Specifies a color configuration"
 msgstr "指定颜色配置"
 
+msgid "<string>"
+msgstr "<string>"
+
 msgid "Show mc with specified skin"
 msgstr "用指定的皮肤显示 MC"
 
@@ -727,6 +769,24 @@ msgid ""
 "   Viewer:       viewnormal,viewbold, viewunderline, viewselected\n"
 "   Help:         helpnormal, helpitalic, helpbold, helplink, helpslink\n"
 msgstr ""
+"--colors KEYWORD={FORE},{BACK},{ATTR}:KEYWORD2=...\n"
+"\n"
+"{FORE}, {BACK} 及 {ATTR} 可以省略，省略时使用默认值\n"
+"\n"
+"关键词: \n"
+"全局: errors, disabled, reverse, gauge, header\n"
+"          input, inputmark, inputunchanged, commandlinemark\n"
+"          bbarhotkey, bbarbutton, statusbar\n"
+"文件显示: normal, selected, marked, markselect\n"
+"对话框窗口:dnormal, dfocus, dhotnormal, dhotfocus, errdhotnormal, "
+"errdhotfocus\n"
+"菜单: menunormal, menuhot, menusel, menuhotsel, menuinactive\n"
+"弹出菜单:pmenunormal, pmenusel, pmenutitle\n"
+"编辑器:editnormal, editbold, editmarked, editwhitespace,\n"
+"            editlinestate, editbg, editframe, editframeactive\n"
+"            editframedrag\n"
+"查看器:viewbold, viewunderline, viewselected\n"
+"帮助:helpnormal, helpi talic, helpbold, helplink, helpslink\n"
 
 #. TRANSLATORS: don't translate color names and attributes
 msgid ""
@@ -741,18 +801,30 @@ msgid ""
 "Attributes:\n"
 "   bold, italic, underline, reverse, blink; append more with '+'\n"
 msgstr ""
+"标准颜色: \n"
+"    black, gray, red, brightred, green, brightgreen, brown, yellow, blue, "
+"brightblue, magenta, brightmagenta, cyan, brightcyan, lightgray and white\n"
+"\n"
+"扩展颜色，当256色可用时: \n"
+"   color16 到 color255，或者 rgb000 到 rgb555 或者 gray0 到 gray23\n"
+"\n"
+"属性: \n"
+"   bold, underline, reverse, blink; 添加更多参数用 “+”连接。\n"
 
 msgid "Color options"
 msgstr "颜色选项"
 
-msgid "+number"
-msgstr "+数字"
+msgid "[+lineno] file1[:lineno] [file2[:lineno]...]"
+msgstr "[+lineno] file1[:lineno] [file2[:lineno]...]"
+
+msgid "file"
+msgstr "文件"
+
+msgid "file1 file2"
+msgstr "文件1 文件2"
 
 msgid "[this_dir] [other_panel_dir]"
 msgstr "[this_dir] [other_panel_dir]"
-
-msgid "Set initial line number for the internal editor"
-msgstr "设置内部编辑器的初始行号"
 
 msgid ""
 "\n"
@@ -1310,6 +1382,10 @@ msgstr "新建(&N)"
 msgid "&Close"
 msgstr "关闭(&C)"
 
+#, fuzzy
+msgid "&History..."
+msgstr "历史"
+
 msgid "Save &as..."
 msgstr "另存为(&A)..."
 
@@ -1593,8 +1669,8 @@ msgstr ""
 "为 Midnight Commander 编写的\n"
 "一个界面友好的文本编辑器。"
 
-msgid "Copyright (C) 1996-2016 the Free Software Foundation"
-msgstr "版权所有 (C) 1996-2016 自由软件基金会"
+msgid "Copyright (C) 1996-2019 the Free Software Foundation"
+msgstr "版权所有 (C) 1996-2019 自由软件基金会"
 
 msgid "About"
 msgstr "关于"
@@ -1745,7 +1821,13 @@ msgstr "无法获取 %s 的本地副本"
 msgid "The shell is already running a command"
 msgstr "Shell 正在运行一个命令"
 
-#, c-format
+msgid ""
+"Not an xterm or Linux console;\n"
+"the panels cannot be toggled."
+msgstr ""
+"不是一个 xterm 或 Linux 控制台；\n"
+"无法切换面板。"
+
 msgid "Type 'exit' to return to the Midnight Commander"
 msgstr "输入 'exit' 返回 Midnight Commander"
 
@@ -1780,6 +1862,15 @@ msgid ""
 msgstr ""
 "无法 chmod“%s”\n"
 "%s"
+
+msgid "&Ignore"
+msgstr "忽略(&I)"
+
+msgid "Ignore &all"
+msgstr "全部忽略(&A)"
+
+msgid "&Retry"
+msgstr "重试(&R)"
 
 #, c-format
 msgid ""
@@ -1872,6 +1963,9 @@ msgstr "切换目录跟随链接(&K)"
 
 msgid "Sa&fe delete"
 msgstr "安全删除(&F)"
+
+msgid "Safe overwrite"
+msgstr "安全覆盖"
 
 msgid "A&uto save setup"
 msgstr "自动保存设置(&U)"
@@ -1982,8 +2076,8 @@ msgstr "列"
 msgid "User &mini status"
 msgstr "用户简要状态(&M)"
 
-msgid "Listing mode"
-msgstr "列表模式"
+msgid "Listing format"
+msgstr "列表格式"
 
 msgid "Executable &first"
 msgstr "可执行文件优先(&f)"
@@ -2292,13 +2386,6 @@ msgstr ""
 "若要使用该命令，\n"
 "两个面板必需都处于列表视图模式"
 
-msgid ""
-"Not an xterm or Linux console;\n"
-"the panels cannot be toggled."
-msgstr ""
-"不是一个 xterm 或 Linux 控制台；\n"
-"无法切换面板。"
-
 #, c-format
 msgid "'%s' is not a symbolic link"
 msgstr "“%s”不是一个符号链接"
@@ -2365,9 +2452,6 @@ msgstr ""
 "无法进入目录“%s”\n"
 "%s"
 
-msgid "Cannot read directory contents"
-msgstr "无法读取目录内容"
-
 msgid "Parameter"
 msgstr "参数"
 
@@ -2430,9 +2514,6 @@ msgstr "%o %f%n\"%s\"%m"
 msgid "%o %d %f%m"
 msgstr "%o %d %f%m"
 
-msgid "file"
-msgstr "文件"
-
 msgid "files"
 msgstr "文件"
 
@@ -2449,8 +2530,23 @@ msgstr "文件/目录"
 msgid " with source mask:"
 msgstr " 源掩码: "
 
-msgid "Cannot make the hardlink"
-msgstr "无法创建硬链接"
+#, c-format
+msgid ""
+"Cannot stat hardlink source file \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot create target hardlink \"%s\"\n"
+"%s"
+msgstr ""
+"无法创建目标硬链接 “%s”\n"
+"%s"
+
+#, c-format
+msgid "Cannot create target hardlink \"%s\""
+msgstr "无法创建目标硬链接 “%s”"
 
 #, c-format
 msgid ""
@@ -2461,13 +2557,13 @@ msgstr ""
 "%s"
 
 msgid ""
-"Cannot make stable symlinks acrossnon-local filesystems:\n"
+"Cannot make stable symlinks across non-local filesystems:\n"
 "\n"
 "Option Stable Symlinks will be disabled"
 msgstr ""
-"无法在非本地文件系统上创建稳定的符号链接: \n"
+"无法在非本地文件系统上创建稳定的符号链接：\n"
 "\n"
-"稳定的符号链接选项将被取消"
+"稳定符号链接选项将被禁用"
 
 #, c-format
 msgid ""
@@ -2477,11 +2573,32 @@ msgstr ""
 "无法创建目标符号链接“%s”\n"
 "%s"
 
+#, c-format
+msgid ""
+"\"%s\"\n"
+"and\n"
+"\"%s\"\n"
+"are the same directory"
+msgstr ""
+"“%s”\n"
+"和\n"
+"“%s”\n"
+"是同一个目录"
+
+#, c-format
+msgid ""
+"\"%s\"\n"
+"and\n"
+"\"%s\"\n"
+"are the same file"
+msgstr ""
+"“%s”\n"
+"和\n"
+"“%s”\n"
+"是同一个文件"
+
 msgid "Ski&p all"
 msgstr "路过全部(&I)"
-
-msgid "&Retry"
-msgstr "重试(&R)"
 
 #, c-format
 msgid ""
@@ -2506,23 +2623,19 @@ msgstr "无(&E)"
 
 #, c-format
 msgid ""
+"Cannot remove file \"%s\"\n"
+"%s"
+msgstr ""
+"无法删除文件“%s”\n"
+"%s"
+
+#, c-format
+msgid ""
 "Cannot stat file \"%s\"\n"
 "%s"
 msgstr ""
 "无法 stat 文件“%s”\n"
 "%s"
-
-#, c-format
-msgid ""
-"\"%s\"\n"
-"and\n"
-"\"%s\"\n"
-"are the same file"
-msgstr ""
-"“%s”\n"
-"和\n"
-"“%s”\n"
-"是同一个文件"
 
 #, c-format
 msgid "Cannot overwrite directory \"%s\""
@@ -2534,22 +2647,6 @@ msgid ""
 "%s"
 msgstr ""
 "无法移动文件“%s”到“%s”\n"
-"%s"
-
-#, c-format
-msgid ""
-"Cannot remove file \"%s\"\n"
-"%s"
-msgstr ""
-"无法删除文件“%s”\n"
-"%s"
-
-#, c-format
-msgid ""
-"Cannot delete file \"%s\"\n"
-"%s"
-msgstr ""
-"无法删除文件“%s”\n"
 "%s"
 
 #, c-format
@@ -2567,6 +2664,25 @@ msgid ""
 msgstr ""
 "无法覆盖目录“%s”\n"
 "%s"
+
+#, c-format
+msgid ""
+"Cannot overwrite file \"%s\"\n"
+"%s"
+msgstr ""
+"无法覆盖文件“%s”\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot move directory \"%s\" to \"%s\"\n"
+"%s"
+msgstr ""
+"无法移动目录“%s”到“%s”\n"
+"%s"
+
+msgid "Cannot operate on \"..\"!"
+msgstr "无法操作\"..\"!"
 
 #, c-format
 msgid ""
@@ -2733,39 +2849,8 @@ msgstr ""
 "%s"
 
 #, c-format
-msgid ""
-"\"%s\"\n"
-"and\n"
-"\"%s\"\n"
-"are the same directory"
-msgstr ""
-"“%s”\n"
-"和\n"
-"“%s”\n"
-"是同一个目录"
-
-#, c-format
-msgid ""
-"Cannot overwrite file \"%s\"\n"
-"%s"
-msgstr ""
-"无法覆盖文件“%s”\n"
-"%s"
-
-#, c-format
-msgid ""
-"Cannot move directory \"%s\" to \"%s\"\n"
-"%s"
-msgstr ""
-"无法移动目录“%s”到“%s”\n"
-"%s"
-
-#, fuzzy, c-format
 msgid "Directories: %zu, total size: %s"
-msgstr "目录: %zd, 总体积: %s"
-
-msgid "Cannot operate on \"..\"!"
-msgstr "无法操作\"..\"!"
+msgstr "目录: %zu, 总体积: %s"
 
 msgid "Sorry, I could not put the job in background"
 msgstr "抱歉，无法将任务放到后台"
@@ -2796,19 +2881,14 @@ msgstr "%.2f KB/s"
 msgid "%ld B/s"
 msgstr "%ld B/s"
 
-msgid "Target file already exists!"
-msgstr "目标文件已存在!"
+msgid "New     :"
+msgstr "新："
 
-#, c-format
-msgid "New     : %s, size %s"
-msgstr "新文件: %s，体积 %s"
+msgid "Existing:"
+msgstr "现有："
 
-#, c-format
-msgid "Existing: %s, size %s"
-msgstr "原文件: %s，体积%s"
-
-msgid "Overwrite this target?"
-msgstr "覆盖该目标?"
+msgid "Overwrite this file?"
+msgstr "覆盖该文件？"
 
 msgid "A&ppend"
 msgstr "追加(&P)"
@@ -2816,14 +2896,20 @@ msgstr "追加(&P)"
 msgid "&Reget"
 msgstr "重新获取(&R)"
 
-msgid "Overwrite all targets?"
-msgstr "覆盖所有目标?"
+msgid "Overwrite all files?"
+msgstr "覆盖所有文件？"
 
-msgid "&Update"
-msgstr "更新(&U)"
+msgid "Don't overwrite with &zero length file"
+msgstr ""
 
-msgid "If &size differs"
-msgstr "如果大小有差别(&S)"
+msgid "&Older"
+msgstr ""
+
+msgid "S&maller"
+msgstr ""
+
+msgid "&Size differs"
+msgstr ""
 
 msgid "File exists"
 msgstr "文件已存在"
@@ -2912,9 +2998,9 @@ msgstr "查看(&V) - F3"
 msgid "&Edit - F4"
 msgstr "编辑(&E) - F4"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Found: %lu"
-msgstr "找到: %ld"
+msgstr "找到: %lu"
 
 msgid "Malformed regular expression"
 msgstr "不正确的正规表达式"
@@ -2962,10 +3048,18 @@ msgstr "在 %s 中查找字符串"
 msgid "Finished"
 msgstr "完成"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Finished (ignored %zu directory)"
 msgid_plural "Finished (ignored %zu directories)"
-msgstr[0] "完成 (忽略 %zd 个目录)"
+msgstr[0] "完成 (忽略 %zu 个目录)"
+
+#, c-format
+msgid "Find File: \"%s\". Content: \"%s\""
+msgstr ""
+
+#, c-format
+msgid "Find File: \"%s\""
+msgstr ""
 
 msgid "Searching"
 msgstr "正在搜索"
@@ -3124,10 +3218,10 @@ msgstr "设备类型: 主要%lu，次要%lu"
 msgid "Size:       %s"
 msgstr "文件大小: %s"
 
-#, fuzzy, c-format
+#, c-format
 msgid " (%lu block)"
 msgid_plural " (%lu blocks)"
-msgstr[0] " (%ld 块)"
+msgstr[0] " (%lu 块)"
 
 #, c-format
 msgid "Owner:      %s/%s"
@@ -3193,8 +3287,8 @@ msgstr "快速查看(&Q)"
 msgid "&Info"
 msgstr "信息(&I)"
 
-msgid "&Listing mode..."
-msgstr "列表模式(&L)..."
+msgid "&Listing format..."
+msgstr "列表格式(&L)…"
 
 msgid "&Sort order..."
 msgstr "排序(&S)..."
@@ -3307,6 +3401,9 @@ msgstr "显示目录大小(&I)"
 msgid "Command &history"
 msgstr "命令历史(&H)"
 
+msgid "Viewed/edited files hi&story"
+msgstr ""
+
 msgid "Di&rectory hotlist"
 msgstr "目录活动列表(&R)"
 
@@ -3358,10 +3455,10 @@ msgstr "虚拟文件系统(&V)..."
 msgid "Panels:"
 msgstr "面板: "
 
-#, fuzzy, c-format
+#, c-format
 msgid "You have %zu opened screen. Quit anyway?"
 msgid_plural "You have %zu opened screens. Quit anyway?"
-msgstr[0] "您有 %zd 个屏幕已打开。确定要退出吗?"
+msgstr[0] "您打开了 %zu 个屏幕。确定要退出吗?"
 
 msgid "The Midnight Commander"
 msgstr "Midnight Commander"
@@ -3530,6 +3627,9 @@ msgstr "取消选择"
 msgid "Do you really want to execute?"
 msgstr "您真的要执行吗?"
 
+msgid "Cannot read directory contents"
+msgstr "无法读取目录内容"
+
 msgid "User supplied format looks invalid, reverting to default."
 msgstr "用户提供的格式无效，回复到默认设置。"
 
@@ -3622,50 +3722,6 @@ msgid ""
 msgstr ""
 "无法写入 %s 文件: \n"
 "%s\n"
-
-msgid "Debug"
-msgstr "调试"
-
-msgid "ERROR:"
-msgstr "错误: "
-
-msgid "True:"
-msgstr "正确: "
-
-msgid "False:"
-msgstr "错误: "
-
-msgid "Error calling program"
-msgstr "调用程序错误"
-
-msgid "Warning -- ignoring file"
-msgstr "警告 － 忽略文件"
-
-#, c-format
-msgid ""
-"File %s is not owned by root or you or is world writable.\n"
-"Using it may compromise your security"
-msgstr ""
-"文件 %s 的拥有者不是 root 或者您，或者是全局可写。\n"
-"使用它可能会妨碍您的安全"
-
-msgid "Format error on file Extensions File"
-msgstr "扩展文件格式错误"
-
-#, c-format
-msgid "The %%var macro has no default"
-msgstr "%%var 宏没有默认值"
-
-#, c-format
-msgid "The %%var macro has no variable"
-msgstr "%%var 宏没有变量"
-
-#, c-format
-msgid "No suitable entries found in %s"
-msgstr "在 %s 没有找到相应的项"
-
-msgid "User menu"
-msgstr "用户菜单"
 
 msgid "Help file format error\n"
 msgstr "帮助文件格式错误\n"
@@ -3819,6 +3875,9 @@ msgstr "使用 ncurses 库\n"
 msgid "Using the ncursesw library\n"
 msgstr "使用 ncursesw 库\n"
 
+msgid "With builtin Editor and Aspell support\n"
+msgstr ""
+
 msgid "With builtin Editor\n"
 msgstr "使用内建编辑器\n"
 
@@ -3858,8 +3917,11 @@ msgstr "虚拟文件系统: "
 msgid "Data types:"
 msgstr "数据类型: "
 
-msgid "Root directory:"
-msgstr "根目录: "
+msgid "Home directory:"
+msgstr "Home路径"
+
+msgid "Profile root directory:"
+msgstr "Profile根路径"
 
 msgid "System data"
 msgstr "系统数据"
@@ -3881,6 +3943,50 @@ msgstr "用户数据"
 
 msgid "Cache directory:"
 msgstr "缓存目录: "
+
+msgid "Debug"
+msgstr "调试"
+
+msgid "ERROR:"
+msgstr "错误: "
+
+msgid "True:"
+msgstr "正确: "
+
+msgid "False:"
+msgstr "错误: "
+
+msgid "Error calling program"
+msgstr "调用程序错误"
+
+msgid "Warning -- ignoring file"
+msgstr "警告 － 忽略文件"
+
+#, c-format
+msgid ""
+"File %s is not owned by root or you or is world writable.\n"
+"Using it may compromise your security"
+msgstr ""
+"文件 %s 的拥有者不是 root 或者您，或者是全局可写。\n"
+"使用它可能会妨碍您的安全"
+
+msgid "Format error on file Extensions File"
+msgstr "扩展文件格式错误"
+
+#, c-format
+msgid "The %%var macro has no default"
+msgstr "%%var 宏没有默认值"
+
+#, c-format
+msgid "The %%var macro has no variable"
+msgstr "%%var 宏没有变量"
+
+#, c-format
+msgid "No suitable entries found in %s"
+msgstr "在 %s 没有找到相应的项"
+
+msgid "User menu"
+msgstr "用户菜单"
 
 #, c-format
 msgid ""
@@ -4173,6 +4279,10 @@ msgid "sftp: No file handler data present for reading file"
 msgstr "sftp: 读取的文件没有指定处理程序"
 
 #, c-format
+msgid "sftp: socket error: %s"
+msgstr "sftp：套接字错误：%s"
+
+#, c-format
 msgid "sftp: (Ctrl-G break) Listing... %s"
 msgstr "sftp: (Ctrl-G 终止) 正在列出... %s"
 
@@ -4419,10 +4529,3 @@ msgstr "从头继续搜索?"
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr "无法获取 /ftp://some.host/editme.txt 的本地副本"
-
-#~ msgid "Cannot parse command for pipe"
-#~ msgstr "无法解析管道命令"
-
-#~ msgid "%s byte"
-#~ msgid_plural "%s bytes"
-#~ msgstr[0] "%s 字节"

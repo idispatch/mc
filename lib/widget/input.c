@@ -1,7 +1,7 @@
 /*
    Widgets for the Midnight Commander
 
-   Copyright (C) 1994-2017
+   Copyright (C) 1994-2019
    Free Software Foundation, Inc.
 
    Authors:
@@ -49,6 +49,7 @@
 #include "lib/keybind.h"        /* global_keymap_t */
 #include "lib/widget.h"
 #include "lib/event.h"          /* mc_event_raise() */
+#include "lib/mcconfig.h"       /* mc_config_history_*() */
 
 #include "input_complete.h"
 
@@ -155,14 +156,12 @@ delete_region (WInput * in, int x_first, int x_last)
 {
     int first = MIN (x_first, x_last);
     int last = MAX (x_first, x_last);
-    size_t len;
 
     input_mark_cmd (in, FALSE);
     in->point = first;
     last = str_offset_to_pos (in->buffer, last);
     first = str_offset_to_pos (in->buffer, first);
-    len = strlen (&in->buffer[last]) + 1;
-    memmove (&in->buffer[first], &in->buffer[last], len);
+    str_move (in->buffer + first, in->buffer + last);
     in->charpoint = 0;
     in->need_push = TRUE;
 }
@@ -173,16 +172,19 @@ static void
 do_show_hist (WInput * in)
 {
     size_t len;
-    char *r;
+    history_descriptor_t hd;
 
     len = get_history_length (in->history.list);
 
-    r = history_show (&in->history.list, WIDGET (in),
-                      g_list_position (in->history.list, in->history.list));
-    if (r != NULL)
+    history_descriptor_init (&hd, WIDGET (in)->y, WIDGET (in)->x, in->history.list,
+                             g_list_position (in->history.list, in->history.list));
+    history_show (&hd);
+
+    in->history.list = hd.list;
+    if (hd.text != NULL)
     {
-        input_assign_text (in, r);
-        g_free (r);
+        input_assign_text (in, hd.text);
+        g_free (hd.text);
     }
 
     /* Has history cleaned up or not? */
@@ -841,7 +843,7 @@ input_load_history (const gchar * event_group_name, const gchar * event_name,
     (void) event_group_name;
     (void) event_name;
 
-    in->history.list = history_load (ev->cfg, in->history.name);
+    in->history.list = mc_config_history_load (ev->cfg, in->history.name);
     in->history.current = in->history.list;
 
     if (in->init_from_history)
@@ -875,7 +877,7 @@ input_save_history (const gchar * event_group_name, const gchar * event_name,
 
         push_history (in, in->buffer);
         if (in->history.changed)
-            history_save (ev->cfg, in->history.name, in->history.list);
+            mc_config_history_save (ev->cfg, in->history.name, in->history.list);
         in->history.changed = FALSE;
     }
 

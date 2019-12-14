@@ -1,7 +1,7 @@
 /*
    Print features specific for this build
 
-   Copyright (C) 2000-2017
+   Copyright (C) 2000-2019
    Free Software Foundation, Inc.
 
    This file is part of the Midnight Commander.
@@ -90,8 +90,12 @@ static const char *const features[] = {
 #endif /* !HAVE_SLANG && !USE_NCURSES */
 
 #ifdef USE_INTERNAL_EDIT
+#ifdef HAVE_ASPELL
+    N_("With builtin Editor and Aspell support\n"),
+#else
     N_("With builtin Editor\n"),
-#endif
+#endif /* HAVE_ASPELL */
+#endif /* USE_INTERNAL_EDIT */
 
 #ifdef ENABLE_SUBSHELL
 #ifdef SUBSHELL_OPTIONAL
@@ -228,10 +232,12 @@ show_datadirs_extended (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
+#ifdef ENABLE_CONFIGURE_ARGS
 void
 show_configure_options (void)
 {
     (void) printf ("%s\n", MC_CONFIGURE_ARGS);
 }
+#endif
 
 /* --------------------------------------------------------------------------------------------- */
